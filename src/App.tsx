@@ -1,122 +1,95 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import {
+  Bell,
+  Building,
+  Calendar,
+  CheckCheckIcon,
+  CheckCircle,
+  Clock4,
+} from "lucide-react";
+import DashboardLayout from "./layouts/DashboardLayout";
+import { Card } from "./components/Card";
+import { Button } from "./components/Button";
+import { DashboardHeader } from "./components/DashboardHeader";
 
-function App() {
-  const [count, setCount] = useState(0)
-
+const App = () => {
   return (
     <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
+      <DashboardHeader
+        title="Selamat Datang Keisya Lanika"
+        description="Kelola magang anda dengan mudah dan efisien"
+      />
+      <Card>
         <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
+          <h4 className="text-xl">Progress Magang</h4>
+          <p className="text-sm">Status perkembangan magang anda</p>
+        </div>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="text-xs">Sedang Berjalan</p>
+            <p className="font-semibold">50%</p>
+          </div>
+          <div className="w-full h-3 bg-gray-400 rounded-full overflow-hidden">
+            <div className="w-1/2 bg-blue-200 h-full"></div>
+          </div>
+          <div className="flex items-center gap-2 text-xs mt-4">
+            <Calendar size={14} /> 15 Hari tersisa dari total 30 hari
+          </div>
+        </div>
+      </Card>
+      <div className="grid grid-cols-3 gap-6">
+        <Card>
+          <div className="flex gap-2 items-center">
+            <CheckCircle className="text-[#00C950]" />
+            <p className="text-lg text-black font-medium">Status Pendaftaran</p>
+          </div>
+          <p className="block w-fit rounded-2xl px-2.5 py-1 bg-[#DCFCE7] font-medium text-xs text-[#016630]">
+            Validasi Admin Selesai
           </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
+          <div className="text-sm text-[#4A5565]">
+            <p>Selamat!</p>
+            <p>Berkas Anda Lolos Verifikasi</p>
+            <div className="font-semibold mt-1 flex items-center">
+              <Building />
+              PT. Telekomunikasi Indonesia
+            </div>
+          </div>
+        </Card>
+        <Card>
+          <div className="flex gap-2 items-center">
+            <Clock4 className="text-[#FF6900]" />
+            <p className="text-lg text-black font-medium">Pengingat Logbook</p>
+          </div>
+          <div className="mt-4">
+            <p className="text-sm font-medium text-black">Terakhir Disi</p>
+            <p className="text-[#4A5565] text-xs">24 Maret 2026</p>
+          </div>
+          <Button variant="outline" size="sm" className="w-full mt-6">
+            Isi Logbook Hari Ini
+          </Button>
+        </Card>
+        <Card>
+          <div className="flex gap-2 items-center">
+            <Bell className="text-[#2B7FFF]" />
+            <p className="text-lg text-black font-medium">
+              Notifikasi Hari Ini
+            </p>
+          </div>
+          <div className="space-y-1 p-2 bg-[#EFF6FF] rounded-md">
+            <p className="font-medium text-xs text-black">
+              Komentar baru dari dosen
+            </p>
+            <p className="text-xs text-[#4A5565]">2 jam yang lalu</p>
+          </div>
+          <div className="space-y-1 p-2 bg-[#F1F2F4] rounded-md">
+            <p className="font-medium text-xs text-black">
+              Komentar baru dari dosen
+            </p>
+            <p className="text-xs text-[#4A5565]">2 jam yang lalu</p>
+          </div>
+        </Card>
+      </div>
     </>
-  )
-}
+  );
+};
 
-export default App
+export default App;
