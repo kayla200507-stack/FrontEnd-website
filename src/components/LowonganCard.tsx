@@ -32,7 +32,7 @@ export const LowonganCard = () => {
             Daftar
           </Button>
           <Button className="w-fit rounded-lg" variant="outline" size="sm">
-            Daftar
+            Detail
           </Button>
         </div>
       </div>
