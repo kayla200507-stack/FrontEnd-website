@@ -71,7 +71,7 @@ const App = () => {
           <div className="flex gap-2 items-center">
             <Bell className="text-[#2B7FFF]" />
             <p className="text-lg text-black font-medium">
-              Notifikasi Hari Ini
+              Notifikasi terbaru
             </p>
           </div>
           <div className="space-y-1 p-2 bg-[#EFF6FF] rounded-md">
