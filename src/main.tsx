@@ -10,6 +10,8 @@ import StatusPage from "./pages/Auth/Mahasiswa/StatusPage.tsx";
 import LogbookPage from "./pages/Auth/Mahasiswa/LogbookPage.tsx";
 import DashboardPage from "./pages/Auth/Mahasiswa/Dashboard.tsx";
 import LaporanPage from "./pages/Auth/Mahasiswa/LaporanPage.tsx";
+import ProfilePage from "./pages/Auth/Mahasiswa/ProfilePage.tsx";
+import KalenderPage from "./pages/Auth/Mahasiswa/KalenderPage.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -21,6 +23,8 @@ createRoot(document.getElementById("root")!).render(
           <Route path="laporan" element={<LaporanPage />} />
           <Route path="status" element={<StatusPage />} />
           <Route path="logbook" element={<LogbookPage />} />
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="kalender" element={<KalenderPage />} />
         </Route>
         <Route index element={<App />}></Route>
         <Route path="auth">
