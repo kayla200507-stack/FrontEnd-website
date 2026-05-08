@@ -1,4 +1,5 @@
 import {
+  Book,
   BriefcaseBusiness,
   Calendar,
   File,
@@ -9,7 +10,7 @@ import {
 } from "lucide-react";
 import { NavLink } from "../components/Navlink";
 import { Notification } from "../components/Notification";
-import { Outlet } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 
 const menus = [
   { label: "Dashboard", icon: Home, href: "/mahasiswa" },
@@ -20,14 +21,43 @@ const menus = [
     href: "/mahasiswa/status",
   },
   {
+    label: "Logbook",
+    icon: Book,
+    href: "/mahasiswa/logbook",
+  },
+  {
     label: "Laporan",
     icon: File,
-    href: "/report",
+    href: "/mahasiswa/laporan",
   },
   {
     label: "Kalender",
     icon: Calendar,
-    href: "/kalender",
+    href: "/mahasiswa/kalender",
+  },
+];
+
+const menuDosen = [
+  { label: "Dashboard", icon: Home, href: "/Dosen" },
+  {
+    label: "Mahasiswa Bimbingan",
+    icon: BriefcaseBusiness,
+    href: "/dosen/Mahasiswa Bimbingan",
+  },
+  {
+    label: "Monitoring Logbook",
+    icon: Book,
+    href: "/mahasiswa/monitoring-logbook",
+  },
+  {
+    label: "Laporan",
+    icon: File,
+    href: "/mahasiswa/report",
+  },
+  {
+    label: "Penilaian Magang",
+    icon: Calendar,
+    href: "/penilaian magang",
   },
 ];
 
@@ -40,7 +70,10 @@ const DashboardLayout = () => {
         </h1>
         <div className="flex gap-2 items-center">
           <Notification />
-          <div className="aspect-square size-8 bg-blue-500 rounded-full"></div>
+          <Link
+            to={"/mahasiswa/profil"}
+            className="aspect-square size-8 bg-blue-500 rounded-full"
+          ></Link>
           <div className="text-blue-800 font-semibold">
             <p>Keisya Lanika</p>
             <p className="text-sm">D3 Teknologi Informasi</p>

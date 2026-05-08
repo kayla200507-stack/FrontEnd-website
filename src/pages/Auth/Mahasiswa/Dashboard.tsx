@@ -2,16 +2,41 @@ import {
   Bell,
   Building,
   Calendar,
-  CheckCheckIcon,
   CheckCircle,
   Clock4,
+  MapPin,
 } from "lucide-react";
-import DashboardLayout from "./layouts/DashboardLayout";
-import { Card } from "./components/Card";
-import { Button } from "./components/Button";
-import { DashboardHeader } from "./components/DashboardHeader";
+import { DashboardHeader } from "../../../components/DashboardHeader";
+import { Card } from "../../../components/Card";
+import { Button } from "../../../components/ui/button";
 
-const App = () => {
+const dashboardData = {
+  lowongans: [
+    {
+      title: "Frontend Developer Intern",
+      company: "PT Teknologi Maju",
+      location: "Jakarta",
+      deadline: "30 Maret 2026",
+      img: "/lowongans/img1.png",
+    },
+    {
+      title: "UI/UX Designer Intern",
+      company: "PT Digital Kreatif",
+      location: "Bandung",
+      deadline: "30 Maret 2026",
+      img: "lowongans/img2.png",
+    },
+    {
+      title: "Backend Developer Intern",
+      company: "PT Inovasi Sistem",
+      location: "Malang",
+      deadline: "15 April 2026",
+      img: "/lowongans/img3.png",
+    },
+  ],
+};
+
+const DashboardPage = () => {
   return (
     <>
       <DashboardHeader
@@ -70,9 +95,7 @@ const App = () => {
         <Card>
           <div className="flex gap-2 items-center">
             <Bell className="text-[#2B7FFF]" />
-            <p className="text-lg text-black font-medium">
-              Notifikasi Terbaru
-            </p>
+            <p className="text-lg text-black font-medium">Notifikasi Terbaru</p>
           </div>
           <div className="space-y-1 p-2 bg-[#EFF6FF] rounded-md">
             <p className="font-medium text-xs text-black">
@@ -88,8 +111,42 @@ const App = () => {
           </div>
         </Card>
       </div>
+      <Card>
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <h4 className="text-xl">Lowongan Magang Terbaru</h4>
+            <p>3 Lowongan terbaru yang mungkin menarik untuk anda</p>
+          </div>
+          <Button variant={"outline"}>Lihat Semua</Button>
+        </div>
+        {dashboardData.lowongans.map((lowongan) => (
+          <div
+            className="border border-gray-500 rounded-md p-2 px-4 flex justify-between items-center"
+            key={lowongan.title}
+          >
+            <div className="flex gap-2 items-center text-black">
+              <img src={lowongan.img} alt="" />
+              <div className="">
+                <p className="font-semibold text-sm">{lowongan.title}</p>
+                <p className="text-xs text-[#4A5565]">{lowongan.company}</p>
+                <div className="flex gap-2 text-[#6A7282]">
+                  <p className="flex items-center text-xs gap-1">
+                    <MapPin size={12} />
+                    {lowongan.location}
+                  </p>
+                  <p className="flex items-center text-xs gap-1">
+                    <Clock4 size={12} />
+                    {lowongan.deadline}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <Button>Detail</Button>
+          </div>
+        ))}
+      </Card>
     </>
   );
 };
 
-export default App;
+export default DashboardPage;
