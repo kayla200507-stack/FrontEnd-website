@@ -37,29 +37,7 @@ const menus = [
   },
 ];
 
-const menuDosen = [
-  { label: "Dashboard", icon: Home, href: "/Dosen" },
-  {
-    label: "Mahasiswa Bimbingan",
-    icon: BriefcaseBusiness,
-    href: "/dosen/Mahasiswa Bimbingan",
-  },
-  {
-    label: "Monitoring Logbook",
-    icon: Book,
-    href: "/mahasiswa/monitoring-logbook",
-  },
-  {
-    label: "Laporan",
-    icon: File,
-    href: "/mahasiswa/report",
-  },
-  {
-    label: "Penilaian Magang",
-    icon: Calendar,
-    href: "/penilaian magang",
-  },
-];
+
 
 const DashboardLayout = () => {
   return (
@@ -92,8 +70,7 @@ const DashboardLayout = () => {
           ))}
         </div>
         <div className="space-y-2">
-          <NavLink icon={Settings} label="Setting" href="/dashboard/setting" />
-          <NavLink icon={LogOut} label="Logout" href="/dashboard/setting" />
+          <NavLink icon={Settings} label="Setting" href="/mahasiswa/settings" />
         </div>
       </aside>
       <div className="px-6 pl-55 pb-20 bg-[#F3F4F6] pt-21 space-y-8">
