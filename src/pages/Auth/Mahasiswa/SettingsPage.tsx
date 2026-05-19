@@ -7,7 +7,8 @@ import {
   Shield,
   Upload,
   Camera,
-  CheckCircle2
+  CheckCircle2,
+  LogOut // <-- Ikon baru ditambahkan di sini
 } from 'lucide-react';
 
 type TabType = 'informasi' | 'pendidikan' | 'dokumen' | 'notifikasi' | 'keamanan';
@@ -35,8 +36,10 @@ export default function SettingsPage() {
     <div className="min-h-screen p-6">
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-8">
 
-        {/* SIDEBAR */}
-        <div className="w-full md:w-72 flex-shrink-0">
+        {/* SIDEBAR CONTAINER */}
+        <div className="w-full md:w-72 flex-shrink-0 flex flex-col gap-4">
+          
+          {/* CARD PENGATURAN */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
             <h2 className="text-lg font-bold text-slate-800 mb-4 px-2">Pengaturan</h2>
             <nav className="space-y-1">
@@ -59,6 +62,16 @@ export default function SettingsPage() {
               })}
             </nav>
           </div>
+
+          {/* TOMBOL LOG OUT */}
+          <button 
+            onClick={() => console.log('Proses Log Out...')}
+            className="w-full flex items-center gap-3 px-6 py-4 bg-white rounded-2xl border border-red-100 shadow-sm transition-all font-medium text-sm text-red-600 hover:bg-red-50 hover:border-red-200"
+          >
+            <LogOut size={20} className="text-red-500" />
+            Keluar Akun
+          </button>
+
         </div>
 
         {/* CONTENT AREA */}
