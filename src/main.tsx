@@ -1,10 +1,14 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import App from "./App.tsx";
+
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+
+import App from "./App.tsx";
 import LoginPage from "./pages/Auth/Login.tsx";
+
 import DashboardLayout from "./layouts/DashboardLayout.tsx";
+
 import LowonganPage from "./pages/Auth/Mahasiswa/LowonganPage.tsx";
 import StatusPage from "./pages/Auth/Mahasiswa/StatusPage.tsx";
 import LogbookPage from "./pages/Auth/Mahasiswa/LogbookPage.tsx";
@@ -26,11 +30,13 @@ createRoot(document.getElementById("root")!).render(
           <Route path="profile" element={<ProfilePage />} />
           <Route path="kalender" element={<KalenderPage />} />
         </Route>
-        <Route index element={<App />}></Route>
+
+        <Route path="/" element={<App />} />
+
         <Route path="auth">
-          <Route path="login" element={<LoginPage />}></Route>
+          <Route path="login" element={<LoginPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
-  </StrictMode>,
+  </StrictMode>
 );
