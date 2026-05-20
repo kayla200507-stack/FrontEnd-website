@@ -12,6 +12,8 @@ import DashboardPage from "./pages/Auth/Mahasiswa/Dashboard.tsx";
 import LaporanPage from "./pages/Auth/Mahasiswa/LaporanPage.tsx";
 import ProfilePage from "./pages/Auth/Mahasiswa/ProfilePage.tsx";
 import KalenderPage from "./pages/Auth/Mahasiswa/KalenderPage.tsx";
+import { DaftarPage } from "./pages/Auth/Mahasiswa/DaftarPage.tsx";
+import { DetailPage } from "./pages/Auth/Mahasiswa/DetailPage.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -19,7 +21,11 @@ createRoot(document.getElementById("root")!).render(
       <Routes>
         <Route path="mahasiswa" element={<DashboardLayout />}>
           <Route index element={<DashboardPage />} />
-          <Route path="lowongan" element={<LowonganPage />} />
+          <Route path="lowongan">
+            <Route index element={<LowonganPage />} />
+            <Route path="detail/:id" element={<DetailPage />} />
+            <Route path="daftar/:id" element={<DaftarPage />} />
+          </Route>
           <Route path="laporan" element={<LaporanPage />} />
           <Route path="status" element={<StatusPage />} />
           <Route path="logbook" element={<LogbookPage />} />

@@ -71,7 +71,11 @@ const App = () => {
           <div className="flex gap-2 items-center">
             <Bell className="text-[#2B7FFF]" />
             <p className="text-lg text-black font-medium">
+<<<<<<< HEAD
               Notifikasi Terbaru
+=======
+              Notifikasi terbaru
+>>>>>>> 082da8fc0c019a0f86540f9882857fcd99b2dbce
             </p>
           </div>
           <div className="space-y-1 p-2 bg-[#EFF6FF] rounded-md">

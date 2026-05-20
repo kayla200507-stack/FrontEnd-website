@@ -29,9 +29,11 @@ export const LowonganCard = () => {
           <p>Deadline: 30 Maret 2025</p>
         </div>
         <div className="flex gap-2 mt-5">
-          <Button className={"flex-4"}>Daftar</Button>
-          <Button className="flex-1" variant="outline">
-            <Link to={"/mahasiswa/lowongan/1"}>Detail</Link>
+          <Button className="w-full rounded-lg" size="sm">
+            Daftar
+          </Button>
+          <Button className="w-fit rounded-lg" variant="outline" size="sm">
+            Daftar
           </Button>
         </div>
       </div>
