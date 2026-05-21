@@ -1,7 +1,8 @@
 import { Building2, Clock4, MapPin } from "lucide-react";
-import { Card } from "./common/Card";
-import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
+import { Card } from "@/components/common/Card";
+import { Button } from "@/components/common/Button";
+import { Badge } from "@/components/ui/badge";
+
 import { Link } from "react-router-dom";
 
 export const LowonganCard = () => {
