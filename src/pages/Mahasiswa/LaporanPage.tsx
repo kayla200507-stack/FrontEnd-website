@@ -1,17 +1,13 @@
-import { Building2, Calendar, CheckCircle, File, MapPin } from "lucide-react";
-import { Card } from "../../../components/Card";
-import { DashboardHeader } from "../../../components/DashboardHeader";
-import { Badge } from "../../../components/ui/badge";
-import { ProgressLamaran } from "../../../components/ProgressLamaran";
-import { Button } from "../../../components/Button";
-import { StatusCard } from "../../../components/StatusCard";
+import { Card } from "@/components/common/Card";
+import { DashboardHeader } from "../../components/common/DashboardHeader";
+import { LaporanCard } from "../../components/LaporanCard";
 
-const StatusPage = () => {
+const LaporanPage = () => {
   return (
     <>
       <DashboardHeader
-        title="Status Lowongan"
-        description="Lacak progress lamaran magang Anda"
+        title="Laporan Magang"
+        description="Upload dan kelola laporan magang anda"
       />
       <div className="grid grid-cols-4 gap-15">
         <Card className="rounded-sm flex flex-col justify-center items-center">
@@ -27,15 +23,15 @@ const StatusPage = () => {
           <p className="text-4xl font-semibold text-blue-600">2</p>
         </Card>
         <Card className="rounded-sm flex flex-col justify-center items-center">
-          <p className="text-sm text-gray-500">Ditolak</p>
-          <p className="text-4xl  font-semibold text-red-500">3</p>
+          <p className="text-sm text-gray-500">Nilai Rata-rata</p>
+          <p className="text-4xl  font-semibold text-ungu-500">85</p>
         </Card>
       </div>
-      {Array.from({ length: 15 }).map((_, i) => (
-        <StatusCard key={i} />
-      ))}
+      <LaporanCard />
+      <LaporanCard />
+      <LaporanCard />
     </>
   );
 };
 
-export default StatusPage;
+export default LaporanPage;
