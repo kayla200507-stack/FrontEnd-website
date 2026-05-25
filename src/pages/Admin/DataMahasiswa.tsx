@@ -1,14 +1,19 @@
 // src/pages/Auth/Admin/DataMahasiswa.tsx
 import React, { useState } from 'react';
-import { AdminLayout } from './components/AdminLayout';
-import { Search, Eye, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
+
+import { Search, Eye, ChevronLeft, ChevronRight, X, Mail, Phone, MapPin, Download } from 'lucide-react';
 
 const DataMahasiswa = () => {
   const [activeMenu, setActiveMenu] = useState('data-mahasiswa');
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('semua');
+  
+  // State untuk Pop Up Modal Detail
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedMahasiswa, setSelectedMahasiswa] = useState<any>(null);
 
+  // Data diperbarui dengan penambahan field untuk detail
   const mahasiswaData = [
     {
       nim: '11210001',
@@ -17,7 +22,12 @@ const DataMahasiswa = () => {
       semester: 6,
       ipk: 3.75,
       perusahaan: 'PT Teknologi Maju',
-      status: 'Sedang Magang'
+      status: 'Sedang Magang',
+      email: 'budi.santoso@email.com',
+      telepon: '081234567890',
+      alamat: 'Jakarta Selatan',
+      tanggalMulai: '1 Maret 2026',
+      tanggalSelesai: '30 Juni 2026'
     },
     {
       nim: '11210002',
@@ -26,7 +36,12 @@ const DataMahasiswa = () => {
       semester: 6,
       ipk: 3.75,
       perusahaan: 'PT Digital Kreatif',
-      status: 'Sedang Magang'
+      status: 'Sedang Magang',
+      email: 'siti.rahma@email.com',
+      telepon: '082134567891',
+      alamat: 'Jakarta Barat',
+      tanggalMulai: '15 Februari 2026',
+      tanggalSelesai: '15 Agustus 2026'
     },
     {
       nim: '11210003',
@@ -35,7 +50,12 @@ const DataMahasiswa = () => {
       semester: 6,
       ipk: 3.75,
       perusahaan: 'PT Inovasi Sistem',
-      status: 'Mencari'
+      status: 'Mencari',
+      email: 'ahmad.fauzi@email.com',
+      telepon: '083134567892',
+      alamat: 'Depok',
+      tanggalMulai: '-',
+      tanggalSelesai: '-'
     },
     {
       nim: '11210004',
@@ -44,7 +64,12 @@ const DataMahasiswa = () => {
       semester: 6,
       ipk: 3.75,
       perusahaan: 'PT Media Online',
-      status: 'Selesai'
+      status: 'Selesai',
+      email: 'dewi.lestari@email.com',
+      telepon: '084134567893',
+      alamat: 'Tangerang',
+      tanggalMulai: '1 September 2025',
+      tanggalSelesai: '1 Maret 2026'
     },
     {
       nim: '11210005',
@@ -53,7 +78,12 @@ const DataMahasiswa = () => {
       semester: 6,
       ipk: 3.75,
       perusahaan: 'PT Solusi Digital',
-      status: 'Mencari'
+      status: 'Mencari',
+      email: 'rudi.hermawan@email.com',
+      telepon: '085134567894',
+      alamat: 'Bekasi',
+      tanggalMulai: '-',
+      tanggalSelesai: '-'
     }
   ];
 
@@ -86,17 +116,21 @@ const DataMahasiswa = () => {
     console.log('Logout');
   };
 
+  // Fungsi untuk membuka pop up detail
   const handleDetail = (nim: string) => {
-    console.log('Detail mahasiswa:', nim);
+    const student = mahasiswaData.find(m => m.nim === nim);
+    setSelectedMahasiswa(student);
+    setIsModalOpen(true);
+  };
+
+  // Fungsi untuk menutup pop up detail
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedMahasiswa(null);
   };
 
   return (
-    <AdminLayout
-      title="Data Mahasiswa"
-      breadcrumb={['Data Mahasiswa']}
-      activeMenu={activeMenu}
-      onMenuChange={handleMenuChange}
-      onLogout={handleLogout}
+    <
     >
       {/* Header Section */}
       <div className="mb-6">
@@ -249,7 +283,126 @@ const DataMahasiswa = () => {
           </div>
         </div>
       </div>
-    </AdminLayout>
+
+      {/* Pop Up / Modal Detail Mahasiswa */}
+      {isModalOpen && selectedMahasiswa && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-6 m-4 max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-gray-800">Detail Mahasiswa</h2>
+                <p className="text-sm text-gray-500 mt-1">Informasi lengkap mahasiswa</p>
+              </div>
+              <button 
+                onClick={closeModal} 
+                className="text-gray-400 hover:text-gray-700 hover:bg-gray-100 p-2 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              {/* Informasi Pribadi */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Informasi Pribadi</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">NIM</p>
+                    <p className="text-sm font-medium text-gray-900">{selectedMahasiswa.nim}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Nama Lengkap</p>
+                    <p className="text-sm font-medium text-gray-900">{selectedMahasiswa.nama}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Email</p>
+                    <p className="text-sm font-medium text-gray-900 flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-gray-400" />
+                      {selectedMahasiswa.email}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Telepon</p>
+                    <p className="text-sm font-medium text-gray-900 flex items-center gap-2">
+                      <Phone className="w-4 h-4 text-gray-400" />
+                      {selectedMahasiswa.telepon}
+                    </p>
+                  </div>
+                  <div className="col-span-1 md:col-span-2">
+                    <p className="text-sm text-gray-500 mb-1">Alamat</p>
+                    <p className="text-sm font-medium text-gray-900 flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-gray-400" />
+                      {selectedMahasiswa.alamat}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Informasi Akademik */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Informasi Akademik</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Program Studi</p>
+                    <p className="text-sm font-medium text-gray-900">{selectedMahasiswa.prodi}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Semester</p>
+                    <p className="text-sm font-medium text-gray-900">{selectedMahasiswa.semester}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">IPK</p>
+                    <p className="text-sm font-medium text-gray-900">{selectedMahasiswa.ipk}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Informasi Magang */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Informasi Magang</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Perusahaan</p>
+                    <p className="text-sm font-medium text-gray-900">{selectedMahasiswa.perusahaan}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Status</p>
+                    <span className={`inline-block px-2.5 py-1 text-xs rounded-full font-medium ${getStatusColor(selectedMahasiswa.status)}`}>
+                      {selectedMahasiswa.status}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Tanggal Mulai</p>
+                    <p className="text-sm font-medium text-gray-900">{selectedMahasiswa.tanggalMulai}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Tanggal Selesai</p>
+                    <p className="text-sm font-medium text-gray-900">{selectedMahasiswa.tanggalSelesai}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="mt-8 flex justify-end gap-3 pt-6 border-t border-gray-100">
+              <button
+                onClick={closeModal}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Tutup
+              </button>
+              <button
+                className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-gray-800 transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Download Data
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
