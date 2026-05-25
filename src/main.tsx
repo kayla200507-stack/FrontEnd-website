@@ -27,7 +27,7 @@ import ProfilePage from "./pages/Mahasiswa/ProfilePage.tsx";
 import KalenderPage from "./pages/Mahasiswa/KalenderPage.tsx";
 import LowonganPage from "./pages/Mahasiswa/LowonganPage.tsx";
 
-import profileAdmin from "./pages/Admin/ProfileAdmin.Page.tsx";
+import ProfileAdminPage from "./pages/Admin/ProfileAdmin.tsx";
 
 
 createRoot(document.getElementById("root")!).render(
@@ -63,8 +63,7 @@ createRoot(document.getElementById("root")!).render(
           </Route>
 
           {/* Admin */}
-          <Route path="admin" element={<profileAdmin />} /> 
-
+          <Route path="admin" element={<ProfileAdminPage />} />
           <Route path="auth" element={<AuthLayout />}>
             <Route path="login" element={<LoginPage />} />
           </Route>
