@@ -1,8 +1,8 @@
 // src/pages/Admin/Dashboard.tsx
 import React, { useState } from 'react';
-import { AdminLayout } from './components/AdminLayout';
-import { RecentSubmissionsTable } from './components/RecentSubmissionsTable';
-import { FilterSection } from './components/FilterSection';
+import { AdminLayout } from '../../layouts/AdminLayout';
+import { FilterSection } from '../../components/features/admin/FilterSection';
+import { RecentSubmissionsTable } from '../../components/features/admin/RecentSubmissionsTable';
 import { Users, Clock, TrendingUp, CheckCircle } from 'lucide-react';
 const AdminDashboard = () => {
   const [activeMenu, setActiveMenu] = React.useState('dashboard');
