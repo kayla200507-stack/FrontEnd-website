@@ -11,7 +11,7 @@ export const FilterSection = ({
   onSearch,
   onFilterChange,
   onDateRangeChange,
-  onEExport
+  onExport
 }: FilterSectionProps) => {
   return (
     <div className="p-4 bg-white rounded-xl border border-gray-200 shadow-sm mt-6">

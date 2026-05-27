@@ -1,6 +1,6 @@
 // src/pages/Auth/Admin/VerifikasiPendaftaran.tsx
 import React, { useState } from 'react';
-import { AdminLayout } from './components/AdminLayout';
+import AdminLayout from '../../../../';
 import { 
   Search, 
   Eye, 
@@ -372,4 +372,4 @@ const VerifikasiPendaftaran = () => {
   );
 };
 
-export default VerifikasiPendaftaran;
+export default VerifikasiPendaftaran; 

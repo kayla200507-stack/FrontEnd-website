@@ -1,6 +1,6 @@
 // src/pages/Auth/Admin/DataMahasiswa.tsx
 import React, { useState } from 'react';
-import { AdminLayout } from './components/AdminLayout';
+import { AdminLayout } from './AdminLayout';
 import { Search, Eye, Users, TrendingUp, Briefcase, CheckCircle } from 'lucide-react';
 
 const DataMahasiswa = () => {

@@ -1,11 +1,17 @@
 // src/pages/Admin/Dashboard.tsx
 import React, { useState } from 'react';
-import { AdminLayout } from '../../layouts/AdminLayout';
+
+// FIX 1: AdminLayout tanpa kurung kurawal
+import AdminLayout from '../../layouts/AdminLayout'; 
+
+// FIX 2: Kembalikan import FilterSection & RecentSubmissionsTable
 import { FilterSection } from '../../components/features/admin/FilterSection';
 import { RecentSubmissionsTable } from '../../components/features/admin/RecentSubmissionsTable';
+
 import { Users, Clock, TrendingUp, CheckCircle } from 'lucide-react';
+
 const AdminDashboard = () => {
-  const [activeMenu, setActiveMenu] = React.useState('dashboard');
+  const [activeMenu, setActiveMenu] = useState('dashboard');
 
   const statsData = [
     {

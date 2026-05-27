@@ -1,6 +1,6 @@
 // src/pages/Auth/Admin/Pengumuman.tsx
 import React, { useState } from 'react';
-import { AdminLayout } from './components/AdminLayout';
+import { AdminLayout } from './AdminLayout';
 import { 
   Megaphone, 
   Calendar, 
