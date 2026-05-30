@@ -1,115 +1,212 @@
-import React, { useState } from 'react';
-import { AdminLayout } from '../../components/features/admin/AdminLayout';
-import { User, Mail, Shield, Building2, Phone, Calendar } from 'lucide-react';
+import React, { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import AdminLayout from "../../layouts/AdminLayout";
+import { toast } from "sonner";
+import { Card } from "@/components/common/Card";
+import { Mail, GraduationCap, Phone, MapPin, Camera } from "lucide-react";
+
+const INITIAL_PROFILE = {
+  nama: "Kayla Haniyah, M.Kom",
+  nip: "198705152010122001",
+  email: "kaylahaniyah@university.ac.id",
+  telepon: "081234567890",
+  jabatan: "Admin Akademik",
+  departemen: "Fakultas Vokasi",
+  universitas: "Universitas Brawijaya",
+  alamat: "Lowukwaru, Malang",
+  avatar: "/Profiles/AdminPersonal.png",
+};
 
 const ProfileAdminPage = () => {
-  const [activeMenu, setActiveMenu] = useState('settings');
+  const navigate = useNavigate();
+  const [profile, setProfile] = useState(INITIAL_PROFILE);
+  const [draft, setDraft] = useState(INITIAL_PROFILE);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
-  const adminInfo = {
-    name: 'Kayla Haniyah',
-    role: 'Admin Akademik',
-    email: 'admin@vokasimangag.com',
-    phone: '081234567890',
-    department: 'D3 Teknologi Informasi',
-    joinDate: '10 Januari 2025'
-  };
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleMenuChange = (menuId: string, submenuId?: string) => {
-    setActiveMenu(menuId);
-    console.log('Menu changed:', menuId, submenuId);
-  };
+  const displayAvatar = avatarPreview ?? profile.avatar;
 
   const handleLogout = () => {
-    console.log('Logout');
+    navigate("/admin/login");
   };
 
+  const handleChange = (field: keyof typeof draft, value: string) => {
+    setDraft((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleSave = () => {
+    setProfile({
+      ...draft,
+      avatar: avatarPreview ?? draft.avatar,
+    });
+    toast.success("Profil admin berhasil disimpan");
+  };
+
+  const handleCancel = () => {
+    setDraft(profile);
+    setAvatarPreview(null);
+    navigate("/admin/dashboard");
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+
+    if (file) {
+      setAvatarPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const inputClass =
+    "w-full h-11 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] px-4 text-sm text-[#374151] outline-none focus:ring-2 focus:ring-[#4769B1]/20 focus:border-[#4769B1]";
+
   return (
-    <AdminLayout
-      title="Profil Admin"
-      breadcrumb={['Profil']}
-      activeMenu={activeMenu}
-      onMenuChange={handleMenuChange}
-      onLogout={handleLogout}
-    >
-      <div className="max-w-4xl mx-auto">
-        {/* Header/Card Background */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
-          <div className="h-32 bg-gradient-to-r from-blue-600 to-indigo-600" />
-          <div className="px-6 pb-6 relative">
-            <div className="flex flex-col sm:flex-row items-center sm:items-end -mt-16 sm:space-x-5 mb-4">
-              <img
-                src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150"
-                alt="Profile Admin"
-                className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-md bg-white"
+    <AdminLayout onLogout={handleLogout} activeMenu="settings">
+      <div className="p-2">
+      {/* HEADER */}
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <h1 className="text-[28px] font-bold text-[#4769B1]">Edit Profil</h1>
+        </div>
+
+        <div className="flex gap-3">
+          <button
+            onClick={handleCancel}
+            className="px-8 h-10 rounded-full border border-[#D1D5DB] bg-white text-sm font-medium text-[#374151] hover:bg-gray-50"
+          >
+            Batal
+          </button>
+
+          <button
+            onClick={handleSave}
+            className="px-8 h-10 rounded-full bg-[#4769B1] text-white text-sm font-medium hover:bg-[#3f5d9f]"
+          >
+            Simpan
+          </button>
+        </div>
+      </div>
+
+      {/* PROFILE CARD */}
+      <Card className="bg-white border border-[#E5E7EB] rounded-2xl p-6 mb-5 shadow-none">
+        <div className="flex items-start gap-5">
+          {/* Avatar */}
+          <div className="relative shrink-0">
+            <img
+              src={displayAvatar}
+              alt="Profile Admin"
+              className="w-20 h-20 rounded-full object-cover border-2 border-white shadow-sm"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src =
+                  `https://ui-avatars.com/api/?name=Kayla+Haniyah&background=4769B1&color=fff`;
+              }}
+            />
+
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-[#4769B1] text-white flex items-center justify-center hover:bg-[#3f5d9f] transition-colors"
+            >
+              <Camera size={13} />
+            </button>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarChange}
+            />
+          </div>
+
+          {/* Data Admin */}
+          <div className="flex-1">
+            <h2 className="text-[24px] font-bold text-[#4769B1]">
+              {profile.nama.split(",")[0]}
+            </h2>
+
+            <div className="flex items-center gap-2 mt-1 text-xs text-[#9CA3AF]">
+              <span>NIP: {profile.nip}</span>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-x-10 gap-y-3 mt-5">
+              <div className="flex items-center gap-2 text-sm text-[#4B5563]">
+                <Mail size={15} />
+                <span>{profile.email}</span>
+              </div>
+
+              <div className="flex items-center gap-2 text-sm text-[#4B5563]">
+                <Phone size={15} />
+                <span>{profile.telepon}</span>
+              </div>
+
+              <div className="flex items-center gap-2 text-sm text-[#4B5563]">
+                <GraduationCap size={15} />
+                <span>{profile.universitas}</span>
+              </div>
+
+              <div className="flex items-center gap-2 text-sm text-[#4B5563]">
+                <MapPin size={15} />
+                <span>{profile.alamat}</span>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2 mt-5">
+              <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-[#F3E8FF] text-[#7E22CE] text-xs font-medium">
+                {profile.jabatan}
+              </span>
+
+              <span className="px-3 py-1 rounded-full bg-[#EAF2FF] text-[#4769B1] text-xs font-medium">
+                {profile.departemen}
+              </span>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* INFORMASI PRIBADI */}
+      <Card className="bg-white border border-[#E5E7EB] rounded-2xl p-6 shadow-none">
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-[#4769B1]">
+            Informasi Pribadi
+          </h3>
+
+          <p className="text-sm text-[#6B7280]">
+            Detail informasi admin akademik
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-5">
+          {(
+            [
+              { label: "Nama Lengkap", field: "nama" },
+              { label: "NIP", field: "nip" },
+              { label: "Email", field: "email" },
+              { label: "Nomor Telepon", field: "telepon" },
+              { label: "Jabatan", field: "jabatan" },
+              { label: "Departemen", field: "departemen" },
+              { label: "Universitas", field: "universitas" },
+              { label: "Alamat", field: "alamat" },
+            ] as {
+              label: string;
+              field: keyof typeof draft;
+            }[]
+          ).map(({ label, field }) => (
+            <div key={field}>
+              <label className="block mb-2 text-sm font-medium text-[#4769B1]">
+                {label}
+              </label>
+
+              <input
+                value={draft[field]}
+                onChange={(e) => handleChange(field, e.target.value)}
+                className={inputClass}
               />
-              <div className="mt-4 sm:mt-0 text-center sm:text-left flex-1">
-                <h2 className="text-2xl font-bold text-gray-800">{adminInfo.name}</h2>
-                <p className="text-blue-600 font-semibold text-sm">{adminInfo.role}</p>
-              </div>
             </div>
-          </div>
+          ))}
         </div>
-
-        {/* Info Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Detail Informasi */}
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-            <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
-              <User className="w-5 h-5 text-blue-600" />
-              Detail Akun
-            </h3>
-            <div className="space-y-4">
-              <div>
-                <p className="text-xs text-gray-400 font-medium">Nama Lengkap</p>
-                <p className="text-sm font-semibold text-gray-800 mt-0.5">{adminInfo.name}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-400 font-medium">Email</p>
-                <p className="text-sm font-semibold text-gray-800 mt-0.5 flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-gray-400" />
-                  {adminInfo.email}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-400 font-medium">Nomor Telepon</p>
-                <p className="text-sm font-semibold text-gray-800 mt-0.5 flex items-center gap-2">
-                  <Phone className="w-4 h-4 text-gray-400" />
-                  {adminInfo.phone}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Organisasi & Jabatan */}
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-            <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
-              <Shield className="w-5 h-5 text-blue-600" />
-              Wewenang & Departemen
-            </h3>
-            <div className="space-y-4">
-              <div>
-                <p className="text-xs text-gray-400 font-medium">Departemen / Prodi</p>
-                <p className="text-sm font-semibold text-gray-800 mt-0.5 flex items-center gap-2">
-                  <Building2 className="w-4 h-4 text-gray-400" />
-                  {adminInfo.department}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-400 font-medium">Tanggal Bergabung</p>
-                <p className="text-sm font-semibold text-gray-800 mt-0.5 flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-gray-400" />
-                  {adminInfo.joinDate}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-400 font-medium">Tingkat Hak Akses</p>
-                <span className="inline-block bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-xs font-semibold mt-1">
-                  Super Admin
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+      </Card>
       </div>
     </AdminLayout>
   );

@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AdminLayout } from '../../layouts/AdminLayout';
 import { 
   Megaphone, 
   Send, 
@@ -13,6 +15,22 @@ import {
 } from "lucide-react";
 
 export default function Pengumuman() {
+  const [activeMenu, setActiveMenu] = useState('pengumuman');
+  const navigate = useNavigate();
+
+  const handleMenuChange = (menuId: string, submenuId?: string) => {
+    setActiveMenu(submenuId || menuId);
+    const target = submenuId || menuId;
+    if (target === 'dashboard') navigate('/admin/dashboard');
+    else if (target === 'data-mahasiswa') navigate('/admin/data-mahasiswa');
+    else if (target === 'verifikasi-pendaftaran') navigate('/admin/verifikasi-pendaftaran');
+    else if (target === 'pengumuman') navigate('/admin/pengumuman');
+    else if (target === 'settings') navigate('/admin/settings');
+  };
+
+  const handleLogout = () => {
+    navigate('/admin/login');
+  };
   // State untuk Data Pengumuman
   const [dataPengumuman] = useState([
     {
@@ -69,7 +87,14 @@ export default function Pengumuman() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F7FB] p-8 font-sans relative">
+    <AdminLayout
+      title="Pengumuman"
+      breadcrumb={['Pengumuman']}
+      activeMenu={activeMenu}
+      onMenuChange={handleMenuChange}
+      onLogout={handleLogout}
+    >
+      <div className="font-sans relative">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
@@ -365,6 +390,7 @@ export default function Pengumuman() {
         </div>
       )}
 
-    </div>
+      </div>
+    </AdminLayout>
   );
 }

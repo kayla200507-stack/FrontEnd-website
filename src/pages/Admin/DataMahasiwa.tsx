@@ -1,5 +1,6 @@
 // src/pages/Auth/Admin/DataMahasiswa.tsx
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AdminLayout } from '../../layouts/AdminLayout';
 import { 
   Search, 
@@ -15,6 +16,7 @@ import {
 
 const DataMahasiswa = () => {
   const [activeMenu, setActiveMenu] = useState('data-mahasiswa');
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('semua');
@@ -126,11 +128,17 @@ const DataMahasiswa = () => {
   const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
 
   const handleMenuChange = (menuId: string, submenuId?: string) => {
-    setActiveMenu(menuId);
+    setActiveMenu(submenuId || menuId);
+    const target = submenuId || menuId;
+    if (target === 'dashboard') navigate('/admin/dashboard');
+    else if (target === 'data-mahasiswa') navigate('/admin/data-mahasiswa');
+    else if (target === 'verifikasi-pendaftaran') navigate('/admin/verifikasi-pendaftaran');
+    else if (target === 'pengumuman') navigate('/admin/pengumuman');
+    else if (target === 'settings') navigate('/admin/settings');
   };
 
   const handleLogout = () => {
-    console.log('Logout');
+    navigate('/admin/login');
   };
 
   // Fungsi membuka pop up detail

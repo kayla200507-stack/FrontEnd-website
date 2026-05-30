@@ -1,5 +1,6 @@
 // src/pages/Auth/Admin/VerifPendaftaran.tsx
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AdminLayout } from '../../layouts/AdminLayout';
 import { 
   FileText, 
@@ -15,6 +16,7 @@ import {
 
 export default function VerifPendaftaranPage() {
   const [activeMenu, setActiveMenu] = useState('verifikasi-pendaftaran');
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('Semua Status');
 
@@ -122,8 +124,18 @@ export default function VerifPendaftaranPage() {
   });
 
   // Fungsi navigasi menu layout
-  const handleMenuChange = (menuId: string) => {
-    setActiveMenu(menuId);
+  const handleMenuChange = (menuId: string, submenuId?: string) => {
+    setActiveMenu(submenuId || menuId);
+    const target = submenuId || menuId;
+    if (target === 'dashboard') navigate('/admin/dashboard');
+    else if (target === 'data-mahasiswa') navigate('/admin/data-mahasiswa');
+    else if (target === 'verifikasi-pendaftaran') navigate('/admin/verifikasi-pendaftaran');
+    else if (target === 'pengumuman') navigate('/admin/pengumuman');
+    else if (target === 'settings') navigate('/admin/settings');
+  };
+
+  const handleLogout = () => {
+    navigate('/admin/login');
   };
 
   // Fungsi pemicu modal verifikasi
@@ -159,7 +171,7 @@ export default function VerifPendaftaranPage() {
       breadcrumb={['Verifikasi Pendaftaran']}
       activeMenu={activeMenu}
       onMenuChange={handleMenuChange}
-      onLogout={() => console.log('Logout')}
+      onLogout={handleLogout}
     >
       {/* Header Section */}
       <div className="mb-8">

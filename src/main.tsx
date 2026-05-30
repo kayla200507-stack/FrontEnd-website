@@ -2,7 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Outlet } from "react-router-dom";
 
 import LandingPage from "./pages/Landing/LandingPage";
 import AppLayout from "./layouts/AppLayout";
@@ -28,12 +28,14 @@ import KalenderPage from "./pages/Mahasiswa/KalenderPage";
 import LowonganPage from "./pages/Mahasiswa/LowonganPage";
 
 import ProfileAdminPage from "./pages/Admin/ProfileAdmin";
+import AdminSettingsPage from "./pages/Admin/SettingsPage";
 import DataMahasiswaPage from "./pages/Admin/DataMahasiwa";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import AdminLayout from "./layouts/AdminLayout";
 import Pengumuman from "./pages/Admin/Pengumuman";
 import VerifPendaftaran from "./pages/Admin/VerifPendaftaran";
 import AdminLogin from "./pages/Admin/Login";
+import AdminLowonganPage from "./pages/Admin/LowonganPage";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -68,14 +70,16 @@ createRoot(document.getElementById("root")!).render(
           </Route>
 
           {/* Admin */}
-          <Route path="admin" element={<AdminLayout />}>
+          <Route path="admin" element={<Outlet />}>
             <Route index element={<AdminDashboard />} />
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="data-mahasiswa" element={<DataMahasiswaPage />} />
             <Route path="login" element={<AdminLogin />} />
             <Route path="profile" element={<ProfileAdminPage />} />
+            <Route path="settings" element={<AdminSettingsPage />} />
             <Route path="pengumuman" element={<Pengumuman />} />
             <Route path="verifikasi-pendaftaran" element={<VerifPendaftaran />} />
+            <Route path="lowongan-magang" element={<AdminLowonganPage />} />
           </Route>
 
           {/* Auth */}

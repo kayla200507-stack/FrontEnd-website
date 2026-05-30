@@ -1,45 +1,26 @@
-import React, { useState } from 'react';
-import { AdminSidebar } from './AdminSidebar';
-import { AdminHeader } from './AdminHeader';
+import React from "react";
+import { Sidebar } from "./AdminSidebar";
+import { Header } from "./AdminHeader";
 
 interface AdminLayoutProps {
-  title: string;
-  breadcrumb?: string[];
-  activeMenu: string;
-  onMenuChange: (menuId: string, submenuId?: string) => void;
-  onLogout: () => void;
   children: React.ReactNode;
+  activeMenu?: string;
+  onLogout?: () => void;
+  title?: string;
+  breadcrumb?: string[];
+  onMenuChange?: (menuId: string, submenuId?: string) => void;
 }
 
-export const AdminLayout: React.FC<AdminLayoutProps> = ({
-  title,
-  breadcrumb = [],
-  activeMenu,
-  onMenuChange,
-  onLogout,
-  children
-}) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
+export function AdminLayout({ children }: AdminLayoutProps) {
   return (
-    <div className="flex h-screen bg-[#F4F6FA] font-sans antialiased overflow-hidden">
-      <AdminSidebar
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-        activeMenu={activeMenu}
-        onMenuChange={onMenuChange}
-        onLogout={onLogout}
-      />
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <AdminHeader
-          onMenuClick={() => setIsSidebarOpen(true)}
-          title={title}
-          breadcrumb={breadcrumb}
-        />
-        <main className="flex-1 overflow-y-auto p-6">
-          {children}
-        </main>
+    <div className="relative bg-[#F3F4F6] min-h-screen">
+      <Header />
+      <Sidebar />
+      <div className="px-6 pl-55 pb-20 bg-[#F3F4F6] pt-21 space-y-8">
+        {children}
       </div>
     </div>
   );
-};
+}
+
+export default AdminLayout;

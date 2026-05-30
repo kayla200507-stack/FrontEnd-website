@@ -1,5 +1,6 @@
 import {
   Book,
+  Briefcase,
   BriefcaseBusiness,
   Calendar,
   ClipboardCheck,
@@ -69,22 +70,27 @@ export const data = {
   adminMenus: [
     {
       label: "Dashboard",
-      href: "#",
+      href: "/admin/dashboard",
       icon: Home,
     },
     {
       label: "Data Mahasiswa",
-      href: "#",
+      href: "/admin/data-mahasiswa",
       icon: Users,
     },
     {
-      label: "Verifikasi pendaftaran",
-      href: "#",
+      label: "Verifikasi Pendaftaran",
+      href: "/admin/verifikasi-pendaftaran",
       icon: ClipboardCheck,
     },
     {
+      label: "Lowongan Magang",
+      href: "/admin/lowongan-magang",
+      icon: Briefcase,
+    },
+    {
       label: "Pengumuman",
-      href: "#",
+      href: "/admin/pengumuman",
       icon: FileText,
     },
   ],
