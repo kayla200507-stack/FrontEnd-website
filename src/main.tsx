@@ -20,22 +20,14 @@ import PenilaianMagangPage from "./pages/Dosen/PenilaianMagangPage";
 import SettingsPage from "./pages/Dosen/SettingPage";
 import MahasiswaLayout from "./layouts/MahasiswaLayout";
 
-import LaporanPage from "./pages/Mahasiswa/LaporanPage";
-import StatusPage from "./pages/Mahasiswa/StatusPage";
-import LogbookPage from "./pages/Mahasiswa/LogbookPage";
-import ProfilePage from "./pages/Mahasiswa/ProfilePage";
-import KalenderPage from "./pages/Mahasiswa/KalenderPage";
-import LowonganPage from "./pages/Mahasiswa/LowonganPage";
-
-import ProfileAdminPage from "./pages/Admin/ProfileAdmin";
-import AdminSettingsPage from "./pages/Admin/SettingsPage";
-import DataMahasiswaPage from "./pages/Admin/DataMahasiwa";
-import AdminDashboard from "./pages/Admin/AdminDashboard";
-import AdminLayout from "./layouts/AdminLayout";
-import Pengumuman from "./pages/Admin/Pengumuman";
-import VerifPendaftaran from "./pages/Admin/VerifPendaftaran";
-import AdminLogin from "./pages/Admin/Login";
-import AdminLowonganPage from "./pages/Admin/LowonganPage";
+import LaporanPage from "./pages/Mahasiswa/LaporanPage.tsx";
+import StatusPage from "./pages/Mahasiswa/StatusPage.tsx";
+import LogbookPage from "./pages/Mahasiswa/LogbookPage.tsx";
+import ProfilePage from "./pages/Mahasiswa/ProfilePage.tsx";
+import KalenderPage from "./pages/Mahasiswa/KalenderPage.tsx";
+import LowonganPage from "./pages/Mahasiswa/LowonganPage.tsx";
+import { DaftarPage } from "./pages/Mahasiswa/DaftarPage.tsx";
+import { DetailPage } from "./pages/Mahasiswa/DetailPage.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -51,7 +43,11 @@ createRoot(document.getElementById("root")!).render(
           {/* Mahasiswa */}
           <Route path="mahasiswa" element={<MahasiswaLayout />}>
             <Route index element={<DashboardPage />} />
-            <Route path="lowongan" element={<LowonganPage />} />
+            <Route path="lowongan">
+              <Route index element={<LowonganPage />} />
+              <Route path="detail/:id" element={<DetailPage />} />
+              <Route path="daftar/:id" element={<DaftarPage />} />
+            </Route>
             <Route path="laporan" element={<LaporanPage />} />
             <Route path="status" element={<StatusPage />} />
             <Route path="logbook" element={<LogbookPage />} />
@@ -60,8 +56,11 @@ createRoot(document.getElementById("root")!).render(
           </Route>
 
           {/* Dosen */}
+
+          {/* Dosen */}
           <Route path="dosen" element={<DosenLayout />}>
             <Route index element={<DashboardDosen />} />
+            <Route path="mahasiswa-bimbingan" element={<MahasiswaBimbingan />} />
             <Route path="mahasiswa-bimbingan" element={<MahasiswaBimbingan />} />
             <Route path="monitoring-logbook" element={<MonitoringLogbook />} />
             <Route path="laporan" element={<LaporanMagangPage />} />
@@ -92,3 +91,4 @@ createRoot(document.getElementById("root")!).render(
     </QueryProvider>
   </StrictMode>,
 );
+

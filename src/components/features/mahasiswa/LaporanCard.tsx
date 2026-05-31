@@ -1,7 +1,7 @@
 import { CheckCircle, Download, Eye, FileText } from "lucide-react";
-import { Card } from "@/components/common/Card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Card } from "../../common/Card";
+import { Badge } from "../../ui/badge";
+import { Button } from "../../common/Button";
 
 export const LaporanCard = () => {
   return (
