@@ -31,8 +31,9 @@ export default function Pengumuman() {
   const handleLogout = () => {
     navigate('/admin/login');
   };
-  // State untuk Data Pengumuman
-  const [dataPengumuman] = useState([
+
+  // State untuk Data Pengumuman (Sekarang ditambahkan setDataPengumuman)
+  const [dataPengumuman, setDataPengumuman] = useState([
     {
       id: 1,
       title: "Perpanjangan Deadline Pendaftaran Magang Semester Genap 2026",
@@ -68,6 +69,12 @@ export default function Pengumuman() {
     }
   ]);
 
+  // State baru untuk menampung input Form Buat Pengumuman
+  const [newTitle, setNewTitle] = useState('');
+  const [newCategory, setNewCategory] = useState('Deadline');
+  const [newTarget, setNewTarget] = useState('Semua Mahasiswa');
+  const [newDesc, setNewDesc] = useState('');
+
   // State untuk mengontrol Pop-Up Modal
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -75,7 +82,14 @@ export default function Pengumuman() {
 
   // Handler Buka/Tutup Modal
   const handleOpenCreateModal = () => setIsCreateModalOpen(true);
-  const handleCloseCreateModal = () => setIsCreateModalOpen(false);
+  const handleCloseCreateModal = () => {
+    // Reset form saat modal ditutup
+    setNewTitle('');
+    setNewCategory('Deadline');
+    setNewTarget('Semua Mahasiswa');
+    setNewDesc('');
+    setIsCreateModalOpen(false);
+  };
 
   const handleOpenEditModal = (item: any) => {
     setSelectedItem(item);
@@ -119,7 +133,8 @@ export default function Pengumuman() {
           </div>
           <div className="flex flex-col justify-center">
             <p className="text-[13px] text-[#64748B]">Total Pengumuman</p>
-            <h3 className="text-[26px] font-bold text-[#0F172A] leading-none mt-1">4</h3>
+            {/* Total pengumuman disesuaikan otomatis dengan jumlah data */}
+            <h3 className="text-[26px] font-bold text-[#0F172A] leading-none mt-1">{dataPengumuman.length}</h3>
           </div>
         </div>
 
@@ -130,7 +145,7 @@ export default function Pengumuman() {
           </div>
           <div className="flex flex-col justify-center">
             <p className="text-[13px] text-[#64748B]">Dipublikasi</p>
-            <h3 className="text-[26px] font-bold text-[#0F172A] leading-none mt-1">4</h3>
+            <h3 className="text-[26px] font-bold text-[#0F172A] leading-none mt-1">{dataPengumuman.length}</h3>
           </div>
         </div>
 
@@ -141,7 +156,7 @@ export default function Pengumuman() {
           </div>
           <div className="flex flex-col justify-center">
             <p className="text-[13px] text-[#64748B]">Bulan ini</p>
-            <h3 className="text-[26px] font-bold text-[#0F172A] leading-none mt-1">4</h3>
+            <h3 className="text-[26px] font-bold text-[#0F172A] leading-none mt-1">{dataPengumuman.length}</h3>
           </div>
         </div>
 
@@ -246,6 +261,8 @@ export default function Pengumuman() {
                 <label className="block text-[13px] font-bold text-gray-700 mb-1.5">Judul Pengumuman</label>
                 <input 
                   type="text" 
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
                   placeholder="Tulis judul pengumuman..." 
                   className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-[14px] text-gray-700 outline-none focus:border-blue-400 transition-colors"
                 />
@@ -254,19 +271,25 @@ export default function Pengumuman() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[13px] font-bold text-gray-700 mb-1.5">Kategori</label>
-                  <select className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-[14px] text-gray-700 outline-none focus:border-blue-400 transition-colors bg-white">
-                    <option>Pilih Kategori</option>
-                    <option>Deadline</option>
-                    <option>Kebijakan</option>
-                    <option>Event</option>
+                  <select 
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-[14px] text-gray-700 outline-none focus:border-blue-400 transition-colors bg-white"
+                  >
+                    <option value="Deadline">Deadline</option>
+                    <option value="Kebijakan">Kebijakan</option>
+                    <option value="Event">Event</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-[13px] font-bold text-gray-700 mb-1.5">Target Audiens</label>
-                  <select className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-[14px] text-gray-700 outline-none focus:border-blue-400 transition-colors bg-white">
-                    <option>Pilih Target Audiens</option>
-                    <option>Semua Mahasiswa</option>
-                    <option>Mahasiswa Semester 6</option>
+                  <select 
+                    value={newTarget}
+                    onChange={(e) => setNewTarget(e.target.value)}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-[14px] text-gray-700 outline-none focus:border-blue-400 transition-colors bg-white"
+                  >
+                    <option value="Semua Mahasiswa">Semua Mahasiswa</option>
+                    <option value="Mahasiswa Semester 6">Mahasiswa Semester 6</option>
                   </select>
                 </div>
               </div>
@@ -275,6 +298,8 @@ export default function Pengumuman() {
                 <label className="block text-[13px] font-bold text-gray-700 mb-1.5">Isi Pengumuman</label>
                 <textarea 
                   rows={5}
+                  value={newDesc}
+                  onChange={(e) => setNewDesc(e.target.value)}
                   placeholder="Tulis isi pengumuman..." 
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 text-[14px] text-gray-700 outline-none focus:border-blue-400 transition-colors resize-none"
                 />
@@ -291,6 +316,39 @@ export default function Pengumuman() {
               </button>
               <button 
                 onClick={() => {
+                  if (!newTitle.trim() || !newDesc.trim()) {
+                    alert("Judul dan isi pengumuman wajib diisi!");
+                    return;
+                  }
+
+                  // Tentukan warna tag berdasarkan kategori yang dipilih
+                  let tagColor = "bg-[#FBE9E7] text-[#D32F2F]"; // Default Deadline
+                  if (newCategory === "Kebijakan") tagColor = "bg-[#F3E5F5] text-[#7B1FA2]";
+                  else if (newCategory === "Event") tagColor = "bg-[#E3F2FD] text-[#1976D2]";
+
+                  // Format tanggal hari ini (Bahasa Indonesia)
+                  const formattedDate = new Date().toLocaleDateString('id-ID', { 
+                    day: 'numeric', 
+                    month: 'long', 
+                    year: 'numeric' 
+                  });
+
+                  // Struktur objek pengumuman baru
+                  const newAnnouncement = {
+                    id: Date.now(),
+                    title: newTitle,
+                    tag: newCategory,
+                    tagColor: tagColor,
+                    date: formattedDate,
+                    target: newTarget,
+                    desc: newDesc,
+                    status: "Dipublikasi",
+                    stats: "Dibaca oleh 0 mahasiswa"
+                  };
+
+                  // Masukkan data baru ke baris paling atas layar
+                  setDataPengumuman([newAnnouncement, ...dataPengumuman]);
+
                   alert("Pengumuman Baru Berhasil Dipublikasikan!");
                   handleCloseCreateModal();
                 }}
