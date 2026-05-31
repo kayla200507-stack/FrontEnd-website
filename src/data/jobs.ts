@@ -5,6 +5,7 @@ import type { Job } from "../utils/types";
 export const jobs: Job[] = [
   {
     id: 1,
+    logo: "",
     title: "Frontend Developer",
     company: "PT. Teknologi Maju",
     location: "Jakarta",
@@ -58,6 +59,7 @@ export const jobs: Job[] = [
   },
   {
     id: 2,
+    logo: "",
     title: "UI/UX Designer",
     company: "PT. Kreasi Digital",
     location: "Bandung",
@@ -106,6 +108,7 @@ export const jobs: Job[] = [
   },
   {
     id: 3,
+    logo: "",
     title: "Backend Developer",
     company: "PT. Backend Corp",
     location: "Malang",

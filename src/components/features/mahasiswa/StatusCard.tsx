@@ -1,8 +1,8 @@
 import { Building2, Calendar, CheckCircle, File } from "lucide-react";
-import { Button } from "./Button";
+import { Button } from "../../common/Button";
 import { ProgressLamaran } from "./ProgressLamaran";
-import { Badge } from "./ui/badge";
-import { Card } from "./Card";
+import { Badge } from "../../ui/badge";
+import { Card } from "../../common/Card";
 
 export const StatusCard = () => {
   return (

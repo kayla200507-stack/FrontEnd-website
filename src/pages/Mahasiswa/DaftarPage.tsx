@@ -5,9 +5,9 @@ import {
   Upload, FileText, Image, User, Award, Camera,
   X, CheckCircle2, Info, ChevronRight,
 } from "lucide-react";
-import { jobs } from "../../../data/jobs";
-import { uploadDocuments } from "../../../data/documents";
-import type { UploadDocument } from "../../../utils/types";
+import { jobs } from "../../data/jobs";
+import { uploadDocuments } from "../../data/documents";
+import type { UploadDocument } from "../../utils/types";
 import { useParams } from "react-router-dom";
 
 

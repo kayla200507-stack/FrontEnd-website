@@ -5,8 +5,8 @@ import {
   MapPin, Building2, Users, GraduationCap, CheckCircle2,
   Share2, FileText, ChevronRight, X,
 } from "lucide-react";
-import { jobs } from "../../../data/jobs";
-import { JobCard } from "../../../components/ui/JobCard";
+import { jobs } from "../../data/jobs";
+import { JobCard } from "../../components/ui/JobCard";
 
 export function DetailPage() {
   const [selectedId, setSelectedId] = useState(1);
