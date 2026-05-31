@@ -20,6 +20,15 @@ import PenilaianMagangPage from "./pages/Dosen/PenilaianMagangPage";
 import SettingsPage from "./pages/Dosen/SettingPage";
 import MahasiswaLayout from "./layouts/MahasiswaLayout";
 
+import AdminDashboard from "./pages/Admin/AdminDashboard";
+import DataMahasiswaPage from "./pages/Admin/DataMahasiwa";
+import AdminLogin from "./pages/Admin/Login";
+import ProfileAdminPage from "./pages/Admin/ProfileAdmin";
+import AdminSettingsPage from "./pages/Admin/SettingsPage";
+import Pengumuman from "./pages/Admin/Pengumuman";
+import VerifPendaftaran from "./pages/Admin/VerifPendaftaran";
+import AdminLowonganPage from "./pages/Admin/LowonganPage";
+
 import LaporanPage from "./pages/Mahasiswa/LaporanPage.tsx";
 import StatusPage from "./pages/Mahasiswa/StatusPage.tsx";
 import LogbookPage from "./pages/Mahasiswa/LogbookPage.tsx";
@@ -60,7 +69,6 @@ createRoot(document.getElementById("root")!).render(
           {/* Dosen */}
           <Route path="dosen" element={<DosenLayout />}>
             <Route index element={<DashboardDosen />} />
-            <Route path="mahasiswa-bimbingan" element={<MahasiswaBimbingan />} />
             <Route path="mahasiswa-bimbingan" element={<MahasiswaBimbingan />} />
             <Route path="monitoring-logbook" element={<MonitoringLogbook />} />
             <Route path="laporan" element={<LaporanMagangPage />} />
