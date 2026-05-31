@@ -1,42 +1,73 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import App from "./App.tsx";
+
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+
+import LandingPage from "./pages/Landing/LandingPage.tsx";
+import AppLayout from "./layouts/AppLayout.tsx";
 import LoginPage from "./pages/Auth/Login.tsx";
-import DashboardLayout from "./layouts/DashboardLayout.tsx";
-import LowonganPage from "./pages/Auth/Mahasiswa/LowonganPage.tsx";
-import StatusPage from "./pages/Auth/Mahasiswa/StatusPage.tsx";
-import LogbookPage from "./pages/Auth/Mahasiswa/LogbookPage.tsx";
-import DashboardPage from "./pages/Auth/Mahasiswa/Dashboard.tsx";
-import LaporanPage from "./pages/Auth/Mahasiswa/LaporanPage.tsx";
-import ProfilePage from "./pages/Auth/Mahasiswa/ProfilePage.tsx";
-import KalenderPage from "./pages/Auth/Mahasiswa/KalenderPage.tsx";
-import { DaftarPage } from "./pages/Auth/Mahasiswa/DaftarPage.tsx";
-import { DetailPage } from "./pages/Auth/Mahasiswa/DetailPage.tsx";
+import AuthLayout from "./layouts/AuthLayout.tsx";
+import QueryProvider from "./providers/QueryProvider.tsx";
+import { Toaster } from "./components/ui/sonner.tsx";
+import DashboardPage from "./pages/Mahasiswa/Dashboard.tsx";
+import DashboardDosen from "./pages/Dosen/Dashboard.tsx";
+import DosenLayout from "./layouts/DosenLayout.tsx";
+import MahasiswaBimbingan from "./pages/Dosen/MahasiswaBimbingan.tsx";
+import MonitoringLogbook from "./pages/Dosen/MonitoringLogbook.tsx";
+import LaporanMagangPage from "./pages/Dosen/LaporanMagang.tsx";
+import PenilaianMagangPage from "./pages/Dosen/PenilaianMagangPage.tsx";
+import MahasiswaLayout from "./layouts/MahasiswaLayout.tsx";
+
+import LaporanPage from "./pages/Mahasiswa/LaporanPage.tsx";
+import StatusPage from "./pages/Mahasiswa/StatusPage.tsx";
+import LogbookPage from "./pages/Mahasiswa/LogbookPage.tsx";
+import ProfilePage from "./pages/Mahasiswa/ProfilePage.tsx";
+import KalenderPage from "./pages/Mahasiswa/KalenderPage.tsx";
+import LowonganPage from "./pages/Mahasiswa/LowonganPage.tsx";
+import { DaftarPage } from "./pages/Mahasiswa/DaftarPage.tsx";
+import { DetailPage } from "./pages/Mahasiswa/DetailPage.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter>
-      <Routes>
-        <Route path="mahasiswa" element={<DashboardLayout />}>
-          <Route index element={<DashboardPage />} />
-          <Route path="lowongan">
-            <Route index element={<LowonganPage />} />
-            <Route path="detail/:id" element={<DetailPage />} />
-            <Route path="daftar/:id" element={<DaftarPage />} />
+    <QueryProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<AppLayout />}>
+            <Route index element={<LandingPage />} />
+            <Route path="lowongan" element={<LowonganPage />} />
           </Route>
-          <Route path="laporan" element={<LaporanPage />} />
-          <Route path="status" element={<StatusPage />} />
-          <Route path="logbook" element={<LogbookPage />} />
-          <Route path="profile" element={<ProfilePage />} />
-          <Route path="kalender" element={<KalenderPage />} />
-        </Route>
-        <Route index element={<App />}></Route>
-        <Route path="auth">
-          <Route path="login" element={<LoginPage />}></Route>
-        </Route>
-      </Routes>
-    </BrowserRouter>
+
+          <Route path="mahasiswa" element={<MahasiswaLayout />}>
+            <Route index element={<DashboardPage />} />
+            <Route path="lowongan">
+              <Route index element={<LowonganPage />} />
+              <Route path="detail/:id" element={<DetailPage />} />
+              <Route path="daftar/:id" element={<DaftarPage />} />
+            </Route>
+            <Route path="laporan" element={<LaporanPage />} />
+            <Route path="status" element={<StatusPage />} />
+            <Route path="logbook" element={<LogbookPage />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="kalender" element={<KalenderPage />} />
+          </Route>
+
+          {/* Dosen */}
+          <Route path="dosen" element={<DosenLayout />}>
+            <Route index element={<DashboardDosen />} />
+            <Route path="mahasiswa-bimbingan" element={<MahasiswaBimbingan />} />
+            <Route path="monitoring-logbook" element={<MonitoringLogbook />} />
+            <Route path="laporan" element={<LaporanMagangPage />} />
+            <Route path="penilaian-magang" element={<PenilaianMagangPage />} />
+          </Route>
+
+          <Route path="auth" element={<AuthLayout />}>
+            <Route path="login" element={<LoginPage />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+      <Toaster />
+    </QueryProvider>
   </StrictMode>,
 );
+

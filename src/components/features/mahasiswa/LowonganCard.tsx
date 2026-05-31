@@ -1,7 +1,8 @@
 import { Building2, Clock4, MapPin } from "lucide-react";
-import { Card } from "./common/Card";
-import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
+import { Card } from "@/components/common/Card";
+import { Button } from "@/components/common/Button";
+import { Badge } from "@/components/ui/badge";
+
 import { Link } from "react-router-dom";
 
 export const LowonganCard = () => {
@@ -29,11 +30,9 @@ export const LowonganCard = () => {
           <p>Deadline: 30 Maret 2025</p>
         </div>
         <div className="flex gap-2 mt-5">
-          <Button className="w-full rounded-lg" size="sm">
-            Daftar
-          </Button>
-          <Button className="w-fit rounded-lg" variant="outline" size="sm">
-            Daftar
+          <Button className={"flex-4"}>Daftar</Button>
+          <Button className="flex-1" variant="outline">
+            <Link to={"/mahasiswa/lowongan/1"}>Detail</Link>
           </Button>
         </div>
       </div>
