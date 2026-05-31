@@ -4,13 +4,9 @@ import "./index.css";
 
 import { BrowserRouter, Route, Routes, Outlet } from "react-router-dom";
 
-import LandingPage from "./pages/Landing/LandingPage";
-import AppLayout from "./layouts/AppLayout";
-import LoginPage from "./pages/Auth/Login";
 import AuthLayout from "./layouts/AuthLayout";
 import QueryProvider from "./providers/QueryProvider";
 import { Toaster } from "./components/ui/sonner";
-import DashboardPage from "./pages/Mahasiswa/Dashboard";
 import DashboardDosen from "./pages/Dosen/Dashboard";
 import DosenLayout from "./layouts/DosenLayout";
 import MahasiswaBimbingan from "./pages/Dosen/MahasiswaBimbingan";
@@ -29,14 +25,8 @@ import Pengumuman from "./pages/Admin/Pengumuman";
 import VerifPendaftaran from "./pages/Admin/VerifPendaftaran";
 import AdminLowonganPage from "./pages/Admin/LowonganPage";
 
-import LaporanPage from "./pages/Mahasiswa/LaporanPage.tsx";
-import StatusPage from "./pages/Mahasiswa/StatusPage.tsx";
-import LogbookPage from "./pages/Mahasiswa/LogbookPage.tsx";
-import ProfilePage from "./pages/Mahasiswa/ProfilePage.tsx";
-import KalenderPage from "./pages/Mahasiswa/KalenderPage.tsx";
-import LowonganPage from "./pages/Mahasiswa/LowonganPage.tsx";
-import { DaftarPage } from "./pages/Mahasiswa/DaftarPage.tsx";
-import { DetailPage } from "./pages/Mahasiswa/DetailPage.tsx";
+import { LandingRoutes, MahasiswaRoutes } from "./routes/MahasiswaRoutes";
+import LoginPage from "./pages/Auth/Login";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -44,25 +34,10 @@ createRoot(document.getElementById("root")!).render(
       <BrowserRouter>
         <Routes>
           {/* Landing & Public */}
-          <Route path="/" element={<AppLayout />}>
-            <Route index element={<LandingPage />} />
-            <Route path="lowongan" element={<LowonganPage />} />
-          </Route>
+          {LandingRoutes}
 
           {/* Mahasiswa */}
-          <Route path="mahasiswa" element={<MahasiswaLayout />}>
-            <Route index element={<DashboardPage />} />
-            <Route path="lowongan">
-              <Route index element={<LowonganPage />} />
-              <Route path="detail/:id" element={<DetailPage />} />
-              <Route path="daftar/:id" element={<DaftarPage />} />
-            </Route>
-            <Route path="laporan" element={<LaporanPage />} />
-            <Route path="status" element={<StatusPage />} />
-            <Route path="logbook" element={<LogbookPage />} />
-            <Route path="profile" element={<ProfilePage />} />
-            <Route path="kalender" element={<KalenderPage />} />
-          </Route>
+          {MahasiswaRoutes}
 
           {/* Dosen */}
 

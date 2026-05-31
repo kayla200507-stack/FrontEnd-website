@@ -1,180 +1,241 @@
-import { Command, FilePlus } from "lucide-react";
-import { Button } from "@/components/common/Button";
-export default function LogbookPage() {
-  const logbooks = [
-    {
-      date: "24 Maret 2026",
-      activity: "Mengembangkan fitur login dengan React dan implementasi",
-      status: "Reviewed",
-      reviewed: true,
-    },
-    {
-      date: "23 Maret 2026",
-      activity: "Mempelajari dokumentasi API dan membuat integrasi dengan",
-      status: "Reviewed",
-      reviewed: true,
-    },
-    {
-      date: "22 Maret 2026",
-      activity: "Meeting dengan tim untuk diskusi design sistem",
-      status: "Pending",
-      reviewed: false,
-    },
-    {
-      date: "21 Maret 2026",
-      activity: "Refactoring kode dan menambahkan unit testing",
-      status: "Reviewed",
-      reviewed: true,
-    },
-  ];
+import { useState, useRef } from "react";
+import { CheckCircle, Clock, UploadCloud, Calendar, MessageSquare } from "lucide-react";
 
-  const feedbacks = [
-    {
-      date: "24 Maret 2026",
-      activity:
-        "Mengembangkan fitur login dengan React dan implementasi autentikasi JWT",
-      comment: "Bagus! Coba tambahkan validasi form yang lebih lengkap.",
-    },
-    {
-      date: "23 Maret 2026",
-      activity:
-        "Mempelajari dokumentasi API dan membuat integrasi dengan backend",
-      comment: "Lanjutkan dengan implementasi error handling.",
-    },
-  ];
+const initialHistory = [
+  {
+    id: 1,
+    date: "24 Maret 2026",
+    status: "Reviewed",
+    desc: "Mengembangkan fitur login dengan React dan implementasi autentikasi JWT",
+  },
+  {
+    id: 2,
+    date: "23 Maret 2026",
+    status: "Reviewed",
+    desc: "Mempelajari dokumentasi API dan membuat integrasi dengan backend",
+  },
+  {
+    id: 3,
+    date: "22 Maret 2026",
+    status: "Pending",
+    desc: "Meeting dengan tim untuk diskusi design sistem",
+  },
+  {
+    id: 4,
+    date: "21 Maret 2026",
+    status: "Reviewed",
+    desc: "Refactoring kode dan menambahkan unit testing",
+  },
+];
+
+const feedbacks = [
+  {
+    id: 1,
+    date: "24 Maret 2026",
+    dosen: "Dr. Rina Kusuma",
+    aktivitas: "Mengembangkan fitur login dengan React dan implementasi autentikasi JWT",
+    komentar: "Bagus! Coba tambahkan validasi form yang lebih lengkap.",
+  },
+  {
+    id: 2,
+    date: "23 Maret 2026",
+    dosen: "Dr. Rina Kusuma",
+    aktivitas: "Mempelajari dokumentasi API dan membuat integrasi dengan backend",
+    komentar: "Lanjutkan dengan implementasi error handling.",
+  },
+];
+
+function StatusBadge({ status }: { status: string }) {
+  if (status === "Reviewed") {
+    return (
+      <span className="flex items-center gap-1.5 bg-[#f0fdf4] text-[#008236] text-[12px] font-medium px-2.5 py-1 rounded-[8px] border border-[#b9f8cf] shrink-0">
+        <CheckCircle size={11} strokeWidth={2.5} />
+        Reviewed
+      </span>
+    );
+  }
+  return (
+    <span className="flex items-center gap-1.5 bg-white border border-[rgba(0,0,0,0.2)] text-[#4a5565] text-[12px] font-medium px-2.5 py-1 rounded-[8px] shrink-0">
+      <Clock size={11} strokeWidth={2} />
+      Pending
+    </span>
+  );
+}
+
+export function LogbookPage() {
+  const [history, setHistory] = useState(initialHistory);
+  const [tanggal, setTanggal] = useState("");
+  const [deskripsi, setDeskripsi] = useState("");
+  const [photo, setPhoto] = useState<string | null>(null);
+  const photoRef = useRef<HTMLInputElement>(null);
+
+  function handleSave() {
+    if (!tanggal && !deskripsi) return;
+    const newEntry = {
+      id: Date.now(),
+      date: tanggal
+        ? new Date(tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })
+        : new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
+      status: "Pending",
+      desc: deskripsi || "(tanpa deskripsi)",
+    };
+    setHistory((prev) => [newEntry, ...prev]);
+    setTanggal("");
+    setDeskripsi("");
+    setPhoto(null);
+  }
+
+  function handleReset() {
+    setTanggal("");
+    setDeskripsi("");
+    setPhoto(null);
+  }
 
   return (
-    <div className="min-h-screen bg-[#F4F5F7] flex font-sans text-[#1F2937]">
-      {/* Main Content */}
-      <main className="flex-1 p-8 overflow-y-auto">
-        {/* Top Section */}
-        <div className="grid grid-cols-2 gap-8 mb-8">
-          {/* Riwayat */}
-          <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6 shadow-sm">
-            <h2 className="text-xl font-semibold text-[#4769B1] mb-1">
-              Riwayat Logbook
-            </h2>
-            <p className="text-[#5B6B88]  mb-6">Aktivitas yang telah dicatat</p>
-
-            <div className="space-y-4">
-              {logbooks.map((item, index) => (
-                <div
-                  key={index}
-                  className="border border-[#E5E7EB] rounded-2xl p-5 flex justify-between items-start"
-                >
-                  <div>
-                    <p className="text-[#6B7280] text-xs font-medium mb-2">
-                      {item.date}
-                    </p>
-                    <p className=" text-[#1F2937] leading-relaxed max-w-[500px]">
-                      {item.activity}
-                    </p>
-                  </div>
-
-                  <div
-                    className={`px-2 py-px rounded-xl text-[15px] font-medium border ${
-                      item.reviewed
-                        ? "bg-[#ECFDF3] text-[#16A34A] border-[#86EFAC]"
-                        : "bg-[#F9FAFB] text-[#6B7280] border-[#D1D5DB]"
-                    }`}
-                  >
-                    {item.status}
-                  </div>
-                </div>
-              ))}
-            </div>
+    <div className="p-6">
+      {/* Top 2-column grid */}
+      <div className="grid grid-cols-12 gap-6 mb-6">
+        {/* Left: Riwayat Logbook */}
+        <div className="col-span-7 bg-white rounded-xl border border-[rgba(0,0,0,0.1)] shadow-sm p-6">
+          <div className="mb-4">
+            <p className="text-[#3a60a0] text-lg font-semibold">Riwayat Logbook</p>
+            <p className="text-[#3a60a0] text-sm mt-0.5">Aktivitas yang telah dicatat</p>
           </div>
 
-          {/* Input */}
-          <div className="bg-white border border-[#E5E7EB] rounded-[28px] p-6 shadow-sm">
-            <h2 className="text-xl font-semibold text-[#4769B1] mb-1">
-              Input Logbook Harian
-            </h2>
-            <p className="text-[#5B6B88] mb-6">
-              Catat aktivitas magang anda setiap hari
-            </p>
-
-            <div className="w-full h-[170px] bg-[#F3F4F6] rounded-2xl flex flex-col items-center justify-center text-[#7B7B7B] mb-5">
-              <div className="w-16 h-16 rounded-full bg-white shadow flex items-center justify-center mb-4">
-                <FilePlus />
-              </div>
-              <p className="">Upload Foto Kegiatan</p>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block font-semibold mb-2">
-                  Tanggal Kegiatan
-                </label>
-                <input
-                  type="date"
-                  className="w-full h-12 bg-[#F8F9FB] border border-[#E5E7EB] rounded-xl px-4 outline-none placeholder:text-base"
-                />
-              </div>
-
-              <div>
-                <label className="block  font-semibold mb-2">
-                  Deskripsi Kegiatan
-                </label>
-                <textarea
-                  rows={4}
-                  placeholder="Tuliskan detail kegiatan yang Anda lakukan hari ini..."
-                  className="w-full bg-[#F8F9FB] border border-[#E5E7EB] rounded-xl px-4 py-3 outline-none resize-none text-[16px]"
-                />
-              </div>
-            </div>
-
-            <p className="text-[#8B8B8B] text-[15px] mt-3 mb-4">
-              Jelaskan secara detail apa yang Anda pelajari dan kerjakan
-            </p>
-
-            <div className="flex gap-4 ">
-              <Button className="w-full">Simpan Logbook</Button>
-              <Button variant="outline">Reset</Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Feedback */}
-        <div className="bg-white border border-[#E5E7EB] rounded-[28px] p-6 shadow-sm">
-          <h2 className="text-xl  font-semibold text-[#4769B1] mb-1 flex items-center gap-3">
-            Feedback Dosen Pembimbing
-          </h2>
-
-          <p className="text-[#5B6B88] text- mb-8">
-            Komentar dan saran untuk logbook terbaru
-          </p>
-
-          <div className="space-y-6">
-            {feedbacks.map((item, index) => (
+          <div className="space-y-3">
+            {history.map((item) => (
               <div
-                key={index}
-                className="bg-[#EEF5FF] border-l-[5px] border-[#3B82F6] rounded-2xl p-5"
+                key={item.id}
+                className="border border-[rgba(0,0,0,0.1)] rounded-lg p-4"
               >
-                <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <p className="text-[#6B7280] text-[15px] font-medium mb-2">
-                      {item.date}
-                    </p>
-                    <p className="text-base leading-relaxed">
-                      <span className="font-semibold">Aktivitas:</span>{" "}
-                      {item.activity}
-                    </p>
-                  </div>
-
-                  <div className="bg-white border border-[#D1D5DB] px-4 py-1 rounded-full text-xs shadow-sm">
-                    Dr. Rina Kusuma
-                  </div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[#4a5565] text-[12px] font-medium">{item.date}</span>
+                  <StatusBadge status={item.status} />
                 </div>
-
-                <div className="bg-white rounded-xl px-5 py-4 text-[#2563EB] text-sm font-medium border border-[#E5E7EB]">
-                  💬 {item.comment}
-                </div>
+                <p className="text-[#0a0a0a] text-[14px] leading-[20px]">{item.desc}</p>
               </div>
             ))}
           </div>
         </div>
-      </main>
+
+        {/* Right: Input Logbook Harian */}
+        <div className="col-span-5 bg-white rounded-xl border border-[rgba(0,0,0,0.1)] shadow-sm p-6">
+          <div className="mb-4">
+            <p className="text-[#3a60a0] text-lg font-semibold">Input Logbook Harian</p>
+            <p className="text-[#3a60a0] text-sm mt-0.5">Catat aktivitas magang anda setiap hari</p>
+          </div>
+
+          {/* Upload photo */}
+          <input
+            ref={photoRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) setPhoto(URL.createObjectURL(file));
+              e.target.value = "";
+            }}
+          />
+          <button
+            onClick={() => photoRef.current?.click()}
+            className="w-full bg-[#f3f4f6] border border-[rgba(0,0,0,0.08)] rounded-lg flex flex-col items-center justify-center gap-2 py-7 mb-4 hover:bg-slate-100 transition-colors overflow-hidden"
+          >
+            {photo ? (
+              <img src={photo} alt="preview" className="max-h-28 object-contain rounded" />
+            ) : (
+              <>
+                <UploadCloud size={28} className="text-[#9ca3af]" strokeWidth={1.5} />
+                <span className="text-[#9ca3af] text-sm">Upload Foto Kegiatan</span>
+              </>
+            )}
+          </button>
+
+          {/* Tanggal Kegiatan */}
+          <div className="mb-4">
+            <label className="block text-[#3a60a0] text-sm font-medium mb-2">Tanggal Kegiatan</label>
+            <div className="relative">
+              <Calendar size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9ca3af] pointer-events-none" />
+              <input
+                type="date"
+                value={tanggal}
+                onChange={(e) => setTanggal(e.target.value)}
+                className="w-full h-9 pl-9 pr-3 bg-white border border-[rgba(0,0,0,0.15)] rounded-lg text-sm text-[#0a0a0a] outline-none focus:border-[#3a60a0] transition-colors"
+              />
+            </div>
+          </div>
+
+          {/* Deskripsi Kegiatan */}
+          <div className="mb-4">
+            <label className="block text-[#3a60a0] text-sm font-medium mb-2">Deskripsi Kegiatan</label>
+            <textarea
+              value={deskripsi}
+              onChange={(e) => setDeskripsi(e.target.value)}
+              placeholder="Tuliskan detail kegiatan yang Anda lakukan hari ini..."
+              rows={4}
+              className="w-full px-3 py-2.5 bg-white border border-[rgba(0,0,0,0.15)] rounded-lg text-sm text-[#0a0a0a] placeholder:text-[#9ca3af] outline-none focus:border-[#3a60a0] resize-none transition-colors"
+            />
+            <p className="text-[#9ca3af] text-xs mt-1">
+              Jelaskan secara detail apa yang Anda pelajari dan kerjakan
+            </p>
+          </div>
+
+          {/* Buttons */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleSave}
+              className="flex-1 h-9 bg-[#0a0a0a] hover:bg-neutral-800 text-white text-sm font-semibold rounded-lg transition-colors"
+            >
+              Simpan Logbook
+            </button>
+            <button
+              onClick={handleReset}
+              className="px-5 h-9 bg-white border border-[rgba(0,0,0,0.2)] text-[#0a0a0a] text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors"
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom: Feedback Dosen Pembimbing */}
+      <div className="bg-white rounded-xl border border-[rgba(0,0,0,0.1)] shadow-sm p-6">
+        <div className="mb-4">
+          <div className="flex items-center gap-2">
+            <MessageSquare size={18} className="text-[#3a60a0]" />
+            <p className="text-[#3a60a0] text-lg font-semibold">Feedback Dosen Pembimbing</p>
+          </div>
+          <p className="text-[#3a60a0] text-sm mt-0.5">Komentar dan saran untuk logbook terbaru</p>
+        </div>
+
+        <div className="space-y-4">
+          {feedbacks.map((fb) => (
+            <div
+              key={fb.id}
+              className="bg-[#eff6ff] border-l-4 border-[#2b7fff] rounded-r-[10px] px-5 py-4"
+            >
+              {/* Row 1: date + dosen */}
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[#0a0a0a] text-[12px] font-medium">{fb.date}</span>
+                <span className="bg-white text-[#0a0a0a] text-[12px] font-medium px-3 py-1 rounded-full border border-[rgba(0,0,0,0.08)] shadow-sm">
+                  {fb.dosen}
+                </span>
+              </div>
+
+              {/* Row 2: aktivitas */}
+              <p className="text-[#0a0a0a] text-[14px] leading-[20px] mb-3">
+                <span className="font-bold">Aktivitas:</span> {fb.aktivitas}
+              </p>
+
+              {/* Row 3: komentar */}
+              <div className="bg-white rounded-lg px-4 py-3 flex items-start gap-2.5">
+                <MessageSquare size={14} className="text-[#1447e6] shrink-0 mt-0.5" />
+                <p className="text-[#1447e6] text-[14px] font-medium">{fb.komentar}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

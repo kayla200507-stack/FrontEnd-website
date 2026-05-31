@@ -9,7 +9,7 @@ export function Sidebar() {
   return (
     <aside className="w-50 fixed top-0 left-0 bg-white h-screen pt-21 px-2 flex flex-col justify-between border-r border-gray-100 z-40">
       <div className="space-y-2">
-        {menus.map((menu) => (
+        {menus.map((menu: any, index) => (
           <Navlink
             label={menu.label}
             icon={menu.icon}
