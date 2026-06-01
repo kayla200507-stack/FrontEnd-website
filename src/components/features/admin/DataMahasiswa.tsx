@@ -1,12 +1,11 @@
 // src/pages/Auth/Admin/DataMahasiswa.tsx
 import React, { useState } from 'react';
-import { AdminLayout } from './components/AdminLayout';
-import { Search, Eye, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
+import { AdminLayout } from './AdminLayout';
+import { Search, Eye, Users, TrendingUp, Briefcase, CheckCircle } from 'lucide-react';
 
 const DataMahasiswa = () => {
   const [activeMenu, setActiveMenu] = useState('data-mahasiswa');
   const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('semua');
 
   const mahasiswaData = [
@@ -57,6 +56,12 @@ const DataMahasiswa = () => {
     }
   ];
 
+  // Hitung statistik
+  const totalMahasiswa = mahasiswaData.length;
+  const sedangMagang = mahasiswaData.filter(m => m.status === 'Sedang Magang').length;
+  const mencariMagang = mahasiswaData.filter(m => m.status === 'Mencari').length;
+  const selesaiMagang = mahasiswaData.filter(m => m.status === 'Selesai').length;
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Sedang Magang':
@@ -104,62 +109,57 @@ const DataMahasiswa = () => {
         <p className="text-sm text-gray-500 mt-1">Kelola data mahasiswa yang terdaftar dalam program magang</p>
       </div>
 
-      {/* Filter Section */}
-      <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
-        <div className="flex flex-wrap gap-4 items-center justify-between">
-          <div className="flex-1 min-w-[250px]">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Cari berdasarkan nama atau NIM..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Total Mahasiswa */}
+        <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <p className="text-sm text-gray-500 mb-1">Total Mahasiswa</p>
+              <h3 className="text-3xl font-bold text-gray-800">{totalMahasiswa}</h3>
+            </div>
+            <div className="p-3 rounded-lg bg-blue-50 text-blue-600">
+              <Users className="w-6 h-6" />
             </div>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setStatusFilter('semua')}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                statusFilter === 'semua'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              Semua
-            </button>
-            <button
-              onClick={() => setStatusFilter('Sedang Magang')}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                statusFilter === 'Sedang Magang'
-                  ? 'bg-green-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              Sedang Magang
-            </button>
-            <button
-              onClick={() => setStatusFilter('Mencari')}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                statusFilter === 'Mencari'
-                  ? 'bg-yellow-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              Mencari
-            </button>
-            <button
-              onClick={() => setStatusFilter('Selesai')}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                statusFilter === 'Selesai'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              Selesai
-            </button>
+        </div>
+
+        {/* Sedang Magang */}
+        <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <p className="text-sm text-gray-500 mb-1">Sedang Magang</p>
+              <h3 className="text-3xl font-bold text-gray-800">{sedangMagang}</h3>
+            </div>
+            <div className="p-3 rounded-lg bg-green-50 text-green-600">
+              <TrendingUp className="w-6 h-6" />
+            </div>
+          </div>
+        </div>
+
+        {/* Mencari Magang */}
+        <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <p className="text-sm text-gray-500 mb-1">Mencari Magang</p>
+              <h3 className="text-3xl font-bold text-gray-800">{mencariMagang}</h3>
+            </div>
+            <div className="p-3 rounded-lg bg-yellow-50 text-yellow-600">
+              <Briefcase className="w-6 h-6" />
+            </div>
+          </div>
+        </div>
+
+        {/* Selesai Magang */}
+        <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <p className="text-sm text-gray-500 mb-1">Selesai Magang</p>
+              <h3 className="text-3xl font-bold text-gray-800">{selesaiMagang}</h3>
+            </div>
+            <div className="p-3 rounded-lg bg-purple-50 text-purple-600">
+              <CheckCircle className="w-6 h-6" />
+            </div>
           </div>
         </div>
       </div>
@@ -171,6 +171,67 @@ const DataMahasiswa = () => {
           <p className="text-sm text-gray-500 mt-1">Cari dan filter data mahasiswa berdasarkan status</p>
         </div>
 
+        {/* Filter Bar */}
+        <div className="p-4 border-b">
+          <div className="flex flex-wrap gap-4 items-center justify-between">
+            <div className="flex-1 min-w-[250px]">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Cari berdasarkan nama atau NIM..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setStatusFilter('semua')}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  statusFilter === 'semua'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                Semua
+              </button>
+              <button
+                onClick={() => setStatusFilter('Sedang Magang')}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  statusFilter === 'Sedang Magang'
+                    ? 'bg-green-600 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                Sedang Magang
+              </button>
+              <button
+                onClick={() => setStatusFilter('Mencari')}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  statusFilter === 'Mencari'
+                    ? 'bg-yellow-600 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                Mencari
+              </button>
+              <button
+                onClick={() => setStatusFilter('Selesai')}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  statusFilter === 'Selesai'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                Selesai
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 border-b">
@@ -214,7 +275,7 @@ const DataMahasiswa = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <button
                       onClick={() => handleDetail(mahasiswa.nim)}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-medium"
+                      className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"
                     >
                       <Eye className="w-4 h-4" />
                       Detail
@@ -226,26 +287,10 @@ const DataMahasiswa = () => {
           </table>
         </div>
 
-        {/* Pagination */}
-        <div className="px-6 py-4 border-t flex items-center justify-between">
+        {/* Footer with count */}
+        <div className="px-6 py-4 border-t bg-gray-50">
           <div className="text-sm text-gray-500">
             Menampilkan {filteredData.length} dari {mahasiswaData.length} data
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
-              className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => setCurrentPage(currentPage + 1)}
-              disabled={filteredData.length < 5}
-              className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
           </div>
         </div>
       </div>
