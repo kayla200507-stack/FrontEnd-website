@@ -36,83 +36,23 @@ import {
 import { Label } from "../../components/ui/label";
 import { Textarea } from "../../components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "../../components/ui/radio-group";
+import DashboardHeader from "../../components/features/dosen/DashboardHeader.tsx";
 
-// Type definitions
-interface InternReport {
-  id: number;
-  studentName: string;
-  nim: string;
-  title: string;
-  submitDate: string;
-  company: string;
-  position: string;
-  status: "waiting" | "approved" | "revision";
-  feedback: string;
-}
+import { ReviewFeedbackModal } from "../../components/features/dosen/ReviewFeedbackModal";
 
-// Mock data
-const initialReports: InternReport[] = [
-  {
-    id: 1,
-    studentName: "Budi Santoso",
-    nim: "11210001",
-    title: "Pengembangan Website E-Commerce",
-    submitDate: "20 Maret 2026",
-    company: "PT Teknologi Meja",
-    position: "Frontend Developer Intern",
-    status: "waiting",
-    feedback: "",
-  },
-  {
-    id: 2,
-    studentName: "Siti Rahmawati",
-    nim: "11210002",
-    title: "Redesign Aplikasi Mobile Banking",
-    submitDate: "22 Maret 2026",
-    company: "PT Digital Kreatif",
-    position: "UI/UX Designer intern",
-    status: "waiting",
-    feedback: "",
-  },
-  {
-    id: 3,
-    studentName: "Ahmad Fauzi",
-    nim: "11210015",
-    title: "Analisis Sentimen Media Sosial",
-    submitDate: "18 Maret 2026",
-    company: "PT Data Cerdas",
-    position: "Data Analyst Intern",
-    status: "approved",
-    feedback: "Kerja bagus, laporan sangat sistematis. Diterima.",
-  },
-  {
-    id: 4,
-    studentName: "Dewi Lestari",
-    nim: "11210022",
-    title: "Implementasi CI/CD Pipeline",
-    submitDate: "19 Maret 2026",
-    company: "PT Solusi Cloud",
-    position: "DevOps Intern",
-    status: "revision",
-    feedback: "Perbaiki bagian metodologi dan tambahkan diagram alur.",
-  },
-  {
-    id: 5,
-    studentName: "Rizki Maulana",
-    nim: "11210007",
-    title: "Optimasi Database untuk E-Learning",
-    submitDate: "21 Maret 2026",
-    company: "PT Edukasi Nusantara",
-    position: "Backend Engineer Intern",
-    status: "waiting",
-    feedback: "",
-  },
-];
+import { useLaporanBimbingan, useReviewLaporan } from "../../hooks/useLaporan";
+import type { Laporan } from "../../services/laporanService";
+import { Loader2 } from "lucide-react";
 
-const StatusBadge: React.FC<{ status: InternReport["status"] }> = ({
+const StatusBadge: React.FC<{ status: string }> = ({
   status,
 }) => {
-  const config = {
+  const config: Record<string, any> = {
+    Pending: {
+      icon: Clock,
+      label: "Menunggu Review",
+      className: "bg-amber-100 text-amber-700 border-amber-200",
+    },
     waiting: {
       icon: Clock,
       label: "Menunggu Review",
@@ -123,14 +63,31 @@ const StatusBadge: React.FC<{ status: InternReport["status"] }> = ({
       label: "Disetujui",
       className: "bg-emerald-100 text-emerald-700 border-emerald-200",
     },
+    Selesai: {
+      icon: CheckCircle,
+      label: "Selesai",
+      className: "bg-emerald-100 text-emerald-700 border-emerald-200",
+    },
+    Diterima: {
+      icon: CheckCircle,
+      label: "Selesai",
+      className: "bg-emerald-100 text-emerald-700 border-emerald-200",
+    },
     revision: {
+      icon: AlertCircle,
+      label: "Perlu Revisi",
+      className: "bg-rose-100 text-rose-700 border-rose-200",
+    },
+    Revisi: {
       icon: AlertCircle,
       label: "Perlu Revisi",
       className: "bg-rose-100 text-rose-700 border-rose-200",
     },
   };
 
-  const { icon: Icon, label, className } = config[status];
+  const { icon: Icon, label, className } = config[status] || {
+    icon: Clock, label: status || "Menunggu Review", className: "bg-amber-100 text-amber-700 border-amber-200"
+  };
 
   return (
     <Badge
@@ -144,23 +101,26 @@ const StatusBadge: React.FC<{ status: InternReport["status"] }> = ({
 };
 
 const LaporanMagangPage: React.FC = () => {
-  const [reports, setReports] = useState<InternReport[]>(initialReports);
+  const { data: laporanResponse, isLoading } = useLaporanBimbingan();
+  const { mutate: reviewLaporan, isPending: isReviewing } = useReviewLaporan();
+
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedReport, setSelectedReport] = useState<InternReport | null>(
-    null,
-  );
+  const [selectedReport, setSelectedReport] = useState<Laporan | null>(null);
+  
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [feedbackText, setFeedbackText] = useState("");
-  const [selectedStatus, setSelectedStatus] =
-    useState<InternReport["status"]>("waiting");
+  const [selectedStatus, setSelectedStatus] = useState<string>("Pending");
+  const [nilai, setNilai] = useState<number | null>(null);
+
+  const reports = (laporanResponse?.data as Laporan[]) || [];
 
   // Statistics
   const stats = useMemo(
     () => ({
       total: reports.length,
-      waiting: reports.filter((r) => r.status === "waiting").length,
-      approved: reports.filter((r) => r.status === "approved").length,
-      revision: reports.filter((r) => r.status === "revision").length,
+      waiting: reports.filter((r) => r.status_review === "waiting" || r.status_review === "Pending").length,
+      approved: reports.filter((r) => r.status_review === "approved" || r.status_review === "Selesai" || r.status_review === "Diterima").length,
+      revision: reports.filter((r) => r.status_review === "revision" || r.status_review === "Revisi").length,
     }),
     [reports],
   );
@@ -170,71 +130,67 @@ const LaporanMagangPage: React.FC = () => {
     if (!searchQuery.trim()) return reports;
 
     const query = searchQuery.toLowerCase();
-    return reports.filter(
-      (report) =>
-        report.studentName.toLowerCase().includes(query) ||
-        report.nim.includes(query) ||
-        report.title.toLowerCase().includes(query),
-    );
+    return reports.filter((report) => {
+      const studentName = report.magang?.mahasiswa?.nama_lengkap?.toLowerCase() || "";
+      const nim = report.magang?.mahasiswa?.nim || "";
+      const title = report.judul_laporan?.toLowerCase() || "";
+      
+      return studentName.includes(query) || nim.includes(query) || title.includes(query);
+    });
   }, [reports, searchQuery]);
 
-  const handleDownload = (report: InternReport) => {
-    toast.success(`Mengunduh laporan "${report.title}"`);
+  const handleDownload = (report: Laporan) => {
+    if (report.file_url) {
+      window.open(report.file_url, "_blank");
+    } else {
+      toast.error("File laporan tidak tersedia.");
+    }
   };
 
-  const openFeedbackModal = (report: InternReport) => {
+  const openFeedbackModal = (report: Laporan) => {
     setSelectedReport(report);
     setFeedbackText(report.feedback || "");
-    setSelectedStatus(report.status);
+    setSelectedStatus(report.status_review);
+    setNilai(report.nilai);
     setFeedbackModalOpen(true);
   };
 
   const handleSubmitFeedback = () => {
     if (!selectedReport) return;
 
-    setReports((prevReports) =>
-      prevReports.map((report) =>
-        report.id === selectedReport.id
-          ? {
-              ...report,
-              status: selectedStatus,
-              feedback:
-                feedbackText ||
-                (selectedStatus === "approved"
-                  ? "Laporan disetujui tanpa catatan."
-                  : "Silakan periksa kembali laporan Anda."),
-            }
-          : report,
-      ),
+    reviewLaporan(
+      {
+        id: selectedReport.id_laporan,
+        status: selectedStatus,
+        feedback: feedbackText || (selectedStatus === "Selesai" ? "Laporan disetujui tanpa catatan." : "Silakan periksa kembali laporan Anda."),
+        nilai: nilai || undefined,
+      },
+      {
+        onSuccess: () => {
+          setFeedbackModalOpen(false);
+          setSelectedReport(null);
+          setFeedbackText("");
+          setNilai(null);
+        },
+      }
     );
-
-    const statusLabels = {
-      waiting: "Menunggu Review",
-      approved: "Disetujui",
-      revision: "Perlu Revisi",
-    };
-
-    toast.success(
-      `Feedback untuk ${selectedReport.studentName} telah dikirim (Status: ${statusLabels[selectedStatus]})`,
-    );
-
-    setFeedbackModalOpen(false);
-    setSelectedReport(null);
-    setFeedbackText("");
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="animate-spin text-blue-600" size={32} />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="container mx-auto px-4 py-6 max-w-7xl">
-        {/* Header - Style like screenshot */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-slate-800 mb-1">
-            Review Laporan Magang
-          </h1>
-          <p className="text-slate-500 text-sm">
-            Review dan berikan feedback untuk laporan akhir mahasiswa
-          </p>
-        </div>
+    <div className="p-6">
+      <div className="mx-auto max-w-7xl">
+        <DashboardHeader
+          title="Review Laporan Magang"
+          subtitle="Review dan berikan feedback untuk laporan akhir mahasiswa"
+        />
 
         {/* Statistics Cards - Style like screenshot (white cards with icons) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -369,17 +325,17 @@ const LaporanMagangPage: React.FC = () => {
                       <td className="px-6 py-4">
                         <div className="space-y-1">
                           <p className="font-semibold text-slate-800 text-sm">
-                            {report.title}
+                            {report.judul_laporan}
                           </p>
                           <div className="flex items-center gap-1.5 text-xs text-slate-500">
                             <User className="w-3 h-3" />
                             <span>
-                              {report.studentName} ({report.nim})
+                              {report.magang?.mahasiswa?.nama_lengkap} ({report.magang?.mahasiswa?.nim})
                             </span>
                           </div>
                           <div className="flex items-center gap-1.5 text-xs text-slate-400">
                             <Calendar className="w-3 h-3" />
-                            <span>Submit: {report.submitDate}</span>
+                            <span>Submit: {new Date(report.tanggal_upload).toLocaleDateString("id-ID")}</span>
                           </div>
                         </div>
                       </td>
@@ -388,16 +344,27 @@ const LaporanMagangPage: React.FC = () => {
                           <div className="flex items-center gap-1.5 text-sm text-slate-700">
                             <Building className="w-3.5 h-3.5 text-slate-400" />
                             <span className="font-medium">
-                              {report.company}
+                              {(() => {
+                                const activePendaftaran = report.magang?.mahasiswa?.pendaftarans?.find(p => p.status === 'Diterima' || p.status === 'Aktif') || report.magang?.mahasiswa?.pendaftarans?.[0];
+                                return activePendaftaran?.lowongan?.nama_perusahaan || "-";
+                              })()}
                             </span>
                           </div>
                           <p className="text-xs text-slate-500 ml-5">
-                            {report.position}
+                            {(() => {
+                              const activePendaftaran = report.magang?.mahasiswa?.pendaftarans?.find(p => p.status === 'Diterima' || p.status === 'Aktif') || report.magang?.mahasiswa?.pendaftarans?.[0];
+                              return activePendaftaran?.lowongan?.judul || "-";
+                            })()}
                           </p>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <StatusBadge status={report.status} />
+                        <StatusBadge status={report.status_review} />
+                        {report.nilai !== null && (
+                          <div className="mt-1 text-xs font-semibold text-emerald-600">
+                            Nilai: {report.nilai}
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex gap-2">
@@ -413,6 +380,7 @@ const LaporanMagangPage: React.FC = () => {
                           <Button
                             size="sm"
                             onClick={() => openFeedbackModal(report)}
+                            disabled={isReviewing}
                             className="gap-1.5 h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white"
                           >
                             <MessageSquare className="w-3.5 h-3.5" />
@@ -429,126 +397,18 @@ const LaporanMagangPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Feedback Modal Dialog - Clean style */}
-      <Dialog open={feedbackModalOpen} onOpenChange={setFeedbackModalOpen}>
-        <DialogContent className="sm:max-w-lg p-0 gap-0">
-          <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-200">
-            <DialogTitle className="flex items-center gap-2 text-lg">
-              <MessageSquare className="w-5 h-5 text-blue-600" />
-              Beri Feedback Laporan
-            </DialogTitle>
-            <DialogDescription className="text-sm text-slate-500">
-              {selectedReport &&
-                `Memberikan feedback untuk laporan ${selectedReport.studentName}`}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="px-6 py-4 space-y-5">
-            <div className="space-y-2">
-              <Label
-                htmlFor="feedback"
-                className="text-sm font-semibold text-slate-700"
-              >
-                Umpan Balik / Catatan Revisi
-              </Label>
-              <Textarea
-                id="feedback"
-                placeholder="Tulis komentar, saran revisi, atau apresiasi untuk mahasiswa..."
-                value={feedbackText}
-                onChange={(e) => setFeedbackText(e.target.value)}
-                rows={4}
-                className="resize-none text-sm"
-              />
-            </div>
-
-            <div className="space-y-3">
-              <Label className="text-sm font-semibold text-slate-700">
-                Status Keputusan
-              </Label>
-              <RadioGroup
-                value={selectedStatus}
-                onValueChange={(value) =>
-                  setSelectedStatus(value as InternReport["status"])
-                }
-                className="flex flex-col sm:flex-row gap-3"
-              >
-                <div
-                  className={`flex items-center gap-2 border rounded-lg p-3 flex-1 cursor-pointer transition-all ${
-                    selectedStatus === "waiting"
-                      ? "border-amber-500 bg-amber-50 ring-1 ring-amber-500"
-                      : "border-slate-200 hover:bg-slate-50"
-                  }`}
-                  onClick={() => setSelectedStatus("waiting")}
-                >
-                  <RadioGroupItem
-                    value="waiting"
-                    id="waiting"
-                    className="mt-0"
-                  />
-                  <Label
-                    htmlFor="waiting"
-                    className="flex items-center gap-2 cursor-pointer text-sm font-normal"
-                  >
-                    <Clock className="w-4 h-4 text-amber-600" />
-                    <span>Menunggu Review</span>
-                  </Label>
-                </div>
-                <div
-                  className={`flex items-center gap-2 border rounded-lg p-3 flex-1 cursor-pointer transition-all ${
-                    selectedStatus === "approved"
-                      ? "border-emerald-500 bg-emerald-50 ring-1 ring-emerald-500"
-                      : "border-slate-200 hover:bg-slate-50"
-                  }`}
-                  onClick={() => setSelectedStatus("approved")}
-                >
-                  <RadioGroupItem value="approved" id="approved" />
-                  <Label
-                    htmlFor="approved"
-                    className="flex items-center gap-2 cursor-pointer text-sm font-normal"
-                  >
-                    <CheckCircle className="w-4 h-4 text-emerald-600" />
-                    <span>Setujui Laporan</span>
-                  </Label>
-                </div>
-                <div
-                  className={`flex items-center gap-2 border rounded-lg p-3 flex-1 cursor-pointer transition-all ${
-                    selectedStatus === "revision"
-                      ? "border-rose-500 bg-rose-50 ring-1 ring-rose-500"
-                      : "border-slate-200 hover:bg-slate-50"
-                  }`}
-                  onClick={() => setSelectedStatus("revision")}
-                >
-                  <RadioGroupItem value="revision" id="revision" />
-                  <Label
-                    htmlFor="revision"
-                    className="flex items-center gap-2 cursor-pointer text-sm font-normal"
-                  >
-                    <AlertCircle className="w-4 h-4 text-rose-600" />
-                    <span>Perlu Revisi</span>
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
-          </div>
-
-          <DialogFooter className="px-6 py-4 border-t border-slate-200 gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setFeedbackModalOpen(false)}
-              className="h-9 text-sm"
-            >
-              Batal
-            </Button>
-            <Button
-              onClick={handleSubmitFeedback}
-              className="gap-2 h-9 text-sm bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              <Send className="w-4 h-4" />
-              Kirim Feedback
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ReviewFeedbackModal
+        isOpen={feedbackModalOpen}
+        selectedReport={selectedReport as any}
+        feedbackText={feedbackText}
+        selectedStatus={selectedStatus}
+        nilai={nilai}
+        onClose={() => setFeedbackModalOpen(false)}
+        onFeedbackChange={setFeedbackText}
+        onStatusChange={setSelectedStatus}
+        onNilaiChange={setNilai}
+        onSubmit={handleSubmitFeedback}
+      />
     </div>
   );
 };

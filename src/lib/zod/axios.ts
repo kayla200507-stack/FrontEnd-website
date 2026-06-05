@@ -1,34 +1,54 @@
-import axios, { AxiosHeaders, type AxiosHeaderValue } from "axios";
+import axios from "axios";
+import { useAuthStore } from "../../stores/authStore";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
-const headerDefaults = {
-  "Content-Type": "application/json",
-};
-
 const axiosInstance = axios.create({
   baseURL: API_URL,
-  withCredentials: false,
-  headers: headerDefaults,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
-axiosInstance.interceptors.request.use((cfg) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    cfg.headers.Authorization = `Bearer ${token}`;
+const publicAuthPaths = [
+  "/auth/login",
+  "/auth/register",
+  "/auth/forgot-password",
+  "/auth/reset-password",
+];
+
+axiosInstance.interceptors.request.use((config) => {
+  const token = useAuthStore.getState().token;
+  const requestUrl = config.url ?? "";
+  const normalizedUrl = requestUrl.startsWith("/")
+    ? requestUrl
+    : `/${requestUrl}`;
+  const isPublicAuthRoute = publicAuthPaths.some((path) =>
+    normalizedUrl.startsWith(path),
+  );
+
+  if (token && !isPublicAuthRoute) {
+    config.headers.Authorization = `Bearer ${token}`;
+  } else if (isPublicAuthRoute) {
+    delete config.headers.Authorization;
   }
-  return cfg;
+
+  return config;
 });
 
 axiosInstance.interceptors.response.use(
-  (res) => res,
-  (err) => {
-    const url = err.config.url;
-    if (err.response?.status === 401 && url !== "/auth/login") {
-      localStorage.removeItem("token");
-      window.location.href = "/auth/login";
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      const { clearAuth } = useAuthStore.getState();
+      clearAuth();
+
+      // Only redirect if not already on login page
+      if (!window.location.pathname.includes("/auth/login")) {
+        window.location.href = "/auth/login";
+      }
     }
-    return Promise.reject(err);
+    return Promise.reject(error);
   },
 );
 

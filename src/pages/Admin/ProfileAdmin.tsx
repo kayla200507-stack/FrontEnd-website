@@ -1,6 +1,5 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import AdminLayout from "../../layouts/AdminLayout";
 import { toast } from "sonner";
 import { Card } from "@/components/common/Card";
 import { Mail, GraduationCap, Phone, MapPin, Camera } from "lucide-react";
@@ -28,7 +27,7 @@ const ProfileAdminPage = () => {
   const displayAvatar = avatarPreview ?? profile.avatar;
 
   const handleLogout = () => {
-    navigate("/admin/login");
+    navigate("/auth/login");
   };
 
   const handleChange = (field: keyof typeof draft, value: string) => {
@@ -64,7 +63,7 @@ const ProfileAdminPage = () => {
     "w-full h-11 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] px-4 text-sm text-[#374151] outline-none focus:ring-2 focus:ring-[#4769B1]/20 focus:border-[#4769B1]";
 
   return (
-    <AdminLayout onLogout={handleLogout} activeMenu="settings">
+    <>
       <div className="p-2">
       {/* HEADER */}
       <div className="flex items-center justify-between mb-5">
@@ -208,7 +207,7 @@ const ProfileAdminPage = () => {
         </div>
       </Card>
       </div>
-    </AdminLayout>
+    </>
   );
 };
 

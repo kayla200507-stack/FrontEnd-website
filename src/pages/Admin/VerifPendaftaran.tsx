@@ -1,7 +1,5 @@
-// src/pages/Auth/Admin/VerifPendaftaran.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AdminLayout } from '../../layouts/AdminLayout';
 import { 
   FileText, 
   CircleAlert, 
@@ -11,100 +9,35 @@ import {
   Search,
   X,
   Check,
-  Eye
+  Eye,
+  Loader2
 } from "lucide-react";
+import { useAllPendaftaran, useUpdatePendaftaranStatus } from '../../hooks/usePendaftaran';
+import { toast } from 'sonner';
 
 export default function VerifPendaftaranPage() {
-  const [activeMenu, setActiveMenu] = useState('verifikasi-pendaftaran');
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('Semua Status');
+
+  // Hooks untuk data asli
+  const { data: response, isLoading } = useAllPendaftaran();
+  const { mutate: updateStatus } = useUpdatePendaftaranStatus();
 
   // State untuk Pop-Up Modal Verifikasi
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPendaftaran, setSelectedPendaftaran] = useState<any>(null);
   const [catatanPenolakan, setCatatanPenolakan] = useState('');
 
-  // Data ditingkatkan nilainya dengan menyertakan berkas lampiran & semester sesuai gambar mockup
-  const tableData = [
-    {
-      nim: "11210001",
-      nama: "Budi Santoso",
-      perusahaan: "PT Teknologi Maju",
-      posisi: "Frontend Developer Intern",
-      ipk: 3.75,
-      semester: 6,
-      tanggal: "25 Maret 2026",
-      status: "Menunggu",
-      fileTranskrip: "transkrip_11210001.pdf",
-      fileCv: "cv_budi_santoso.pdf",
-      fileSuratIzin: "surat_izin_11210001.pdf"
-    },
-    {
-      nim: "11210002",
-      nama: "Siti Rahmawati",
-      perusahaan: "PT Digital Kreatif",
-      posisi: "UI/UX Designer Intern",
-      ipk: 3.68,
-      semester: 6,
-      tanggal: "25 Maret 2026",
-      status: "Menunggu",
-      fileTranskrip: "transkrip_11210002.pdf",
-      fileCv: "cv_siti_rahmawati.pdf",
-      fileSuratIzin: "surat_izin_11210002.pdf"
-    },
-    {
-      nim: "11210003",
-      nama: "Ahmad Fauzi",
-      perusahaan: "PT Inovasi Sistem",
-      posisi: "Backend Developer Intern",
-      ipk: 3.85,
-      semester: 6,
-      tanggal: "24 Maret 2026",
-      status: "Menunggu",
-      fileTranskrip: "transkrip_11210003.pdf",
-      fileCv: "cv_ahmad_fauzi.pdf",
-      fileSuratIzin: "surat_izin_11210003.pdf"
-    },
-    {
-      nim: "11210004",
-      nama: "Dewi Lestari",
-      perusahaan: "PT Media Online",
-      posisi: "Data Analyst Intern",
-      ipk: 3.52,
-      semester: 6,
-      tanggal: "24 Maret 2026",
-      status: "Disetujui",
-      fileTranskrip: "transkrip_11210004.pdf",
-      fileCv: "cv_dewi_lestari.pdf",
-      fileSuratIzin: "surat_izin_11210004.pdf"
-    },
-    {
-      nim: "11210005",
-      nama: "Rudi Hermawan",
-      perusahaan: "PT Solusi Digital",
-      posisi: "Mobile Developer Intern",
-      ipk: 2.95,
-      semester: 6,
-      tanggal: "23 Maret 2026",
-      status: "Ditolak",
-      fileTranskrip: "transkrip_11210005.pdf",
-      fileCv: "cv_rudi_hermawan.pdf",
-      fileSuratIzin: "surat_izin_11210005.pdf"
-    },
-  ];
-
-  // Hitung akumulasi statistik secara dinamis
-  const totalPengajuan = tableData.length;
-  const menungguCount = tableData.filter(d => d.status === "Menunggu").length;
-  const disetujuiCount = tableData.filter(d => d.status === "Disetujui").length;
-  const ditolakCount = tableData.filter(d => d.status === "Ditolak").length;
+  // Mapping data dari backend
+  const rawData = response as any;
+  const pendaftaranList = Array.isArray(rawData?.data) ? rawData.data : [];
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "Menunggu":
+      case "Pending":
         return "bg-[#FFF3E0] text-[#D97706] border border-[#FDE68A]";
-      case "Disetujui":
+      case "Diterima":
         return "bg-[#EAF7ED] text-[#16A34A] border border-[#BBE5C3]";
       case "Ditolak":
         return "bg-[#FDEAEA] text-[#DC2626] border border-[#FECACA]";
@@ -114,33 +47,24 @@ export default function VerifPendaftaranPage() {
   };
 
   // Handler Filter & Search
-  const filteredData = tableData.filter(item => {
-    const matchesSearch = item.posisi.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          item.perusahaan.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          item.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          item.nim.includes(searchTerm);
-    const matchesStatus = statusFilter === "Semua Status" || item.status === statusFilter;
+  const filteredData = pendaftaranList.filter((item: any) => {
+    const matchesSearch = item.lowongan?.judul.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          item.lowongan?.nama_perusahaan.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          item.mahasiswa?.user?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          item.nim_mahasiswa.includes(searchTerm);
+    const matchesStatus = statusFilter === "Semua Status" || item.status_pendaftaran === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
-  // Fungsi navigasi menu layout
-  const handleMenuChange = (menuId: string, submenuId?: string) => {
-    setActiveMenu(submenuId || menuId);
-    const target = submenuId || menuId;
-    if (target === 'dashboard') navigate('/admin/dashboard');
-    else if (target === 'data-mahasiswa') navigate('/admin/data-mahasiswa');
-    else if (target === 'verifikasi-pendaftaran') navigate('/admin/verifikasi-pendaftaran');
-    else if (target === 'pengumuman') navigate('/admin/pengumuman');
-    else if (target === 'settings') navigate('/admin/settings');
-  };
-
-  const handleLogout = () => {
-    navigate('/admin/login');
-  };
+  // Hitung akumulasi statistik
+  const totalPengajuan = pendaftaranList.length;
+  const menungguCount = pendaftaranList.filter((d: any) => d.status_pendaftaran === "Pending").length;
+  const disetujuiCount = pendaftaranList.filter((d: any) => d.status_pendaftaran === "Diterima").length;
+  const ditolakCount = pendaftaranList.filter((d: any) => d.status_pendaftaran === "Ditolak").length;
 
   // Fungsi pemicu modal verifikasi
-  const handleOpenVerifikasi = (mahasiswa: any) => {
-    setSelectedPendaftaran(mahasiswa);
+  const handleOpenVerifikasi = (pendaftaran: any) => {
+    setSelectedPendaftaran(pendaftaran);
     setCatatanPenolakan('');
     setIsModalOpen(true);
   };
@@ -150,29 +74,31 @@ export default function VerifPendaftaranPage() {
     setSelectedPendaftaran(null);
   };
 
-  // Simulasi Aksi Form Verifikasi
   const handleSetujui = () => {
-    alert(`Pendaftaran ${selectedPendaftaran.nama} Berhasil DISETUJUI!`);
+    updateStatus({ id: selectedPendaftaran.id_pendaftaran, status: 'Diterima' });
     handleCloseModal();
   };
 
   const handleTolak = () => {
     if (!catatanPenolakan.trim()) {
-      alert('Harap isi catatan penolakan terlebih dahulu.');
+      toast.error('Harap isi catatan penolakan terlebih dahulu.');
       return;
     }
-    alert(`Pendaftaran ${selectedPendaftaran.nama} telah DITOLAK dengan alasan: ${catatanPenolakan}`);
+    updateStatus({ id: selectedPendaftaran.id_pendaftaran, status: 'Ditolak' });
     handleCloseModal();
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px]">
+        <Loader2 className="w-10 h-10 animate-spin text-[#4263AC]" />
+        <p className="mt-4 text-gray-500 font-medium">Memuat data pendaftaran...</p>
+      </div>
+    );
+  }
+
   return (
-    <AdminLayout
-      title="Verifikasi Pendaftaran"
-      breadcrumb={['Verifikasi Pendaftaran']}
-      activeMenu={activeMenu}
-      onMenuChange={handleMenuChange}
-      onLogout={handleLogout}
-    >
+    <>
       {/* Header Section */}
       <div className="mb-8">
         <h1 className="text-[32px] font-bold text-[#4263AC] tracking-tight leading-tight">
@@ -246,8 +172,8 @@ export default function VerifPendaftaranPage() {
               className="appearance-none bg-gray-50 border border-gray-200 text-gray-700 text-[14px] font-medium rounded-lg px-4 py-2.5 pr-10 outline-none hover:bg-gray-100 cursor-pointer min-w-[160px]"
             >
               <option value="Semua Status">Semua Status</option>
-              <option value="Menunggu">Menunggu</option>
-              <option value="Disetujui">Disetujui</option>
+              <option value="Pending">Menunggu</option>
+              <option value="Diterima">Disetujui</option>
               <option value="Ditolak">Ditolak</option>
             </select>
             <ChevronDown className="w-4 h-4 text-gray-500 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -255,7 +181,7 @@ export default function VerifPendaftaranPage() {
         </div>
         <div className="flex items-center justify-between">
           <span className="text-[14px] text-gray-500 font-medium">
-            Menampilkan {filteredData.length} dari {tableData.length} Pengajuan
+            Menampilkan {filteredData.length} dari {pendaftaranList.length} Pengajuan
           </span>
           <button 
             onClick={() => { setSearchTerm(''); setStatusFilter('Semua Status'); }}
@@ -292,31 +218,25 @@ export default function VerifPendaftaranPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredData.map((row, index) => (
+              {filteredData.map((row: any, index: number) => (
                 <tr key={index} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="py-5 px-4 text-[14px] text-gray-600 border-b border-gray-100">{row.nim}</td>
-                  <td className="py-5 px-4 text-[14px] font-semibold text-gray-800 border-b border-gray-100">{row.nama}</td>
-                  <td className="py-5 px-4 text-[14px] text-gray-600 border-b border-gray-100">{row.perusahaan}</td>
+                  <td className="py-5 px-4 text-[14px] text-gray-600 border-b border-gray-100">{row.nim_mahasiswa}</td>
+                  <td className="py-5 px-4 text-[14px] font-semibold text-gray-800 border-b border-gray-100">{row.mahasiswa?.user?.name}</td>
+                  <td className="py-5 px-4 text-[14px] text-gray-600 border-b border-gray-100">{row.lowongan?.nama_perusahaan}</td>
                   <td className="py-5 px-4 text-[13px] text-gray-600 border-b border-gray-100 pr-4 leading-snug w-[200px]">
-                    {row.posisi}
+                    {row.lowongan?.judul}
                   </td>
-                  <td className={`py-5 px-4 text-[14px] font-semibold border-b border-gray-100 ${row.ipk >= 3.0 ? 'text-[#16A34A]' : 'text-[#DC2626]'}`}>
-                    {row.ipk.toFixed(2)}
+                  <td className={`py-5 px-4 text-[14px] font-semibold border-b border-gray-100 ${row.mahasiswa?.ipk >= 3.0 ? 'text-[#16A34A]' : 'text-[#DC2626]'}`}>
+                    {row.mahasiswa?.ipk || '-'}
                   </td>
-                  <td className="py-5 px-4 text-[14px] text-gray-600 border-b border-gray-100">{row.tanggal}</td>
+                  <td className="py-5 px-4 text-[14px] text-gray-600 border-b border-gray-100">{new Date(row.tanggal_daftar).toLocaleDateString('id-ID')}</td>
                   <td className="py-5 px-4 border-b border-gray-100">
-                    <span className={`px-3 py-1 text-[12px] font-semibold rounded-full ${getStatusBadge(row.status)}`}>
-                      {row.status}
+                    <span className={`px-3 py-1 text-[12px] font-semibold rounded-full ${getStatusBadge(row.status_pendaftaran)}`}>
+                      {row.status_pendaftaran === 'Pending' ? 'Menunggu' : row.status_pendaftaran}
                     </span>
                   </td>
                   <td className="py-5 px-4 border-b border-gray-100">
                     <div className="flex items-center justify-center gap-2">
-                      <button 
-                        onClick={() => alert(`Detail mahasiswa: ${row.nama}`)}
-                        className="px-4 py-1.5 text-[13px] font-medium border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                      >
-                        Detail
-                      </button>
                       <button 
                         onClick={() => handleOpenVerifikasi(row)}
                         className="px-4 py-1.5 text-[13px] font-medium bg-[#0F172A] text-white rounded-lg hover:bg-gray-800 transition-colors shadow-sm"
@@ -327,14 +247,19 @@ export default function VerifPendaftaranPage() {
                   </td>
                 </tr>
               ))}
+              {filteredData.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="py-10 text-center text-gray-500 italic">
+                    Tidak ada pendaftaran ditemukan.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* ========================================= */}
-      {/* POP-UP MODAL VERIFIKASI PENDAFTARAN MAHASISWA */}
-      {/* ========================================= */}
+      {/* Modal Verifikasi */}
       {isModalOpen && selectedPendaftaran && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl flex flex-col max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
@@ -360,29 +285,35 @@ export default function VerifPendaftaranPage() {
               <div className="grid grid-cols-2 gap-x-6 gap-y-3.5 text-sm">
                 <div>
                   <p className="text-xs text-gray-400 font-medium">Nama</p>
-                  <p className="font-bold text-gray-800 mt-0.5">{selectedPendaftaran.nama}</p>
+                  <p className="font-bold text-gray-800 mt-0.5">{selectedPendaftaran.mahasiswa?.user?.name}</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-400 font-medium">NIM</p>
-                  <p className="font-bold text-gray-800 mt-0.5">{selectedPendaftaran.nim}</p>
+                  <p className="font-bold text-gray-800 mt-0.5">{selectedPendaftaran.nim_mahasiswa}</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-400 font-medium">Perusahaan</p>
-                  <p className="font-semibold text-gray-700 mt-0.5">{selectedPendaftaran.perusahaan}</p>
+                  <p className="font-semibold text-gray-700 mt-0.5">{selectedPendaftaran.lowongan?.nama_perusahaan}</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-400 font-medium">Posisi</p>
-                  <p className="font-semibold text-gray-700 mt-0.5">{selectedPendaftaran.posisi}</p>
+                  <p className="font-semibold text-gray-700 mt-0.5">{selectedPendaftaran.lowongan?.judul}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="text-xs text-gray-400 font-medium">Dosen Pembimbing</p>
+                  <p className="font-bold text-gray-800 mt-0.5">
+                    {selectedPendaftaran.dosen?.user?.profile?.nama || selectedPendaftaran.dosen?.user?.name || '-'}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-400 font-medium">IPK</p>
-                  <p className={`font-bold mt-0.5 ${selectedPendaftaran.ipk >= 3.0 ? 'text-green-600' : 'text-red-500'}`}>
-                    {selectedPendaftaran.ipk.toFixed(2)}
+                  <p className={`font-bold mt-0.5 ${selectedPendaftaran.mahasiswa?.ipk >= 3.0 ? 'text-green-600' : 'text-red-500'}`}>
+                    {selectedPendaftaran.mahasiswa?.ipk || '-'}
                   </p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-400 font-medium">Semester</p>
-                  <p className="font-semibold text-gray-700 mt-0.5">{selectedPendaftaran.semester}</p>
+                  <p className="font-semibold text-gray-700 mt-0.5">{selectedPendaftaran.mahasiswa?.semester || '-'}</p>
                 </div>
               </div>
 
@@ -394,7 +325,7 @@ export default function VerifPendaftaranPage() {
                 <div className="space-y-2 text-sm font-medium text-gray-700">
                   <div className="flex items-center justify-between">
                     <span>IPK minimal 3.0</span>
-                    {selectedPendaftaran.ipk >= 3.0 ? (
+                    {(selectedPendaftaran.mahasiswa?.ipk || 0) >= 3.0 ? (
                       <CheckCircle className="w-4 h-4 text-green-600 fill-green-50" />
                     ) : (
                       <XCircle className="w-4 h-4 text-red-500 fill-red-50" />
@@ -402,7 +333,7 @@ export default function VerifPendaftaranPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Semester minimal 6</span>
-                    {selectedPendaftaran.semester >= 6 ? (
+                    {(selectedPendaftaran.mahasiswa?.semester || 0) >= 6 ? (
                       <CheckCircle className="w-4 h-4 text-green-600 fill-green-50" />
                     ) : (
                       <XCircle className="w-4 h-4 text-red-500 fill-red-50" />
@@ -417,62 +348,36 @@ export default function VerifPendaftaranPage() {
                   Dokumen Lampiran
                 </h4>
                 
-                {/* File 1: Transkrip */}
-                <div className="flex items-center justify-between border border-gray-100 rounded-xl p-3 bg-white shadow-sm">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-50 rounded-lg text-blue-500">
-                      <FileText className="w-4 h-4" />
+                {[
+                  { label: "Surat Pengantar", url: selectedPendaftaran.surat_pengantar_url, file: selectedPendaftaran.surat_pengantar },
+                  { label: "CV File", url: selectedPendaftaran.cv_file_url, file: selectedPendaftaran.cv_file },
+                  { label: "KTM File", url: selectedPendaftaran.ktm_file_url, file: selectedPendaftaran.ktm_file },
+                  { label: "Transkrip Nilai", url: selectedPendaftaran.transkrip_nilai_url, file: selectedPendaftaran.transkrip_nilai },
+                  { label: "Foto Terbaru", url: selectedPendaftaran.foto_terbaru_url, file: selectedPendaftaran.foto_terbaru },
+                  { label: "Sertifikat File", url: selectedPendaftaran.sertifikat_file_url, file: selectedPendaftaran.sertifikat_file },
+                ].map((doc, idx) => (
+                  <div key={idx} className="flex items-center justify-between border border-gray-100 rounded-xl p-3 bg-white shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-blue-50 rounded-lg text-blue-500">
+                        <FileText className="w-4 h-4" />
+                      </div>
+                      <div className="max-w-[280px] sm:max-w-xs">
+                        <p className="text-xs font-semibold text-gray-800">{doc.label}</p>
+                        <p className="text-[11px] text-gray-400 truncate">{doc.file || 'Tidak ada file'}</p>
+                      </div>
                     </div>
-                    <div className="max-w-[280px] sm:max-w-xs">
-                      <p className="text-xs font-semibold text-gray-800">Transkrip Nilai</p>
-                      <p className="text-[11px] text-gray-400 truncate">{selectedPendaftaran.fileTranskrip}</p>
-                    </div>
+                    {doc.url && (
+                      <a 
+                        href={doc.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3 py-1 text-xs font-semibold border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-700 flex items-center gap-1"
+                      >
+                        <Eye className="w-3.5 h-3.5" /> Preview
+                      </a>
+                    )}
                   </div>
-                  <button 
-                    onClick={() => alert(`Membuka berkas: ${selectedPendaftaran.fileTranskrip}`)}
-                    className="px-3 py-1 text-xs font-semibold border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-700 flex items-center gap-1"
-                  >
-                    <Eye className="w-3.5 h-3.5" /> Preview
-                  </button>
-                </div>
-
-                {/* File 2: CV */}
-                <div className="flex items-center justify-between border border-gray-100 rounded-xl p-3 bg-white shadow-sm">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-50 rounded-lg text-blue-500">
-                      <FileText className="w-4 h-4" />
-                    </div>
-                    <div className="max-w-[280px] sm:max-w-xs">
-                      <p className="text-xs font-semibold text-gray-800">Curriculum Vitae</p>
-                      <p className="text-[11px] text-gray-400 truncate">{selectedPendaftaran.fileCv}</p>
-                    </div>
-                  </div>
-                  <button 
-                    onClick={() => alert(`Membuka berkas: ${selectedPendaftaran.fileCv}`)}
-                    className="px-3 py-1 text-xs font-semibold border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-700 flex items-center gap-1"
-                  >
-                    <Eye className="w-3.5 h-3.5" /> Preview
-                  </button>
-                </div>
-
-                {/* File 3: Surat Izin */}
-                <div className="flex items-center justify-between border border-gray-100 rounded-xl p-3 bg-white shadow-sm">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-50 rounded-lg text-blue-500">
-                      <FileText className="w-4 h-4" />
-                    </div>
-                    <div className="max-w-[280px] sm:max-w-xs">
-                      <p className="text-xs font-semibold text-gray-800">Surat Izin Magang</p>
-                      <p className="text-[11px] text-gray-400 truncate">{selectedPendaftaran.fileSuratIzin}</p>
-                    </div>
-                  </div>
-                  <button 
-                    onClick={() => alert(`Membuka berkas: ${selectedPendaftaran.fileSuratIzin}`)}
-                    className="px-3 py-1 text-xs font-semibold border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-700 flex items-center gap-1"
-                  >
-                    <Eye className="w-3.5 h-3.5" /> Preview
-                  </button>
-                </div>
+                ))}
               </div>
 
               {/* Textarea Catatan Penolakan */}
@@ -508,13 +413,13 @@ export default function VerifPendaftaranPage() {
                 onClick={handleSetujui}
                 className="px-4 py-2 bg-[#0F172A] text-white rounded-xl text-sm font-semibold flex items-center gap-1.5 hover:bg-gray-800 transition-colors shadow-sm"
               >
-                <Check className="w-4 h-4" /> Setujui Pendaftaran
+                <Check className="w-4 h-4" /> Verifikasi & Mulai Magang
               </button>
             </div>
 
           </div>
         </div>
       )}
-    </AdminLayout>
+    </>
   );
 }

@@ -1,33 +1,47 @@
-import { Route, useNavigate, useLocation, Outlet } from "react-router-dom";
+import {
+  Route,
+  useNavigate,
+  useLocation,
+  Outlet,
+  Navigate,
+} from "react-router-dom";
 import { Navbar } from "../components/Navbar";
 import { Footer } from "../components/Footer";
-import { Layout } from "../components/Layout";
+import { Navigator } from "../components/common/Navigator";
+import { usePendaftaranStore } from "../stores/pendaftaranStore";
 
 // Landing pages
 import { Beranda } from "../pages/Landing/Beranda";
 import { Lowongan } from "../pages/Landing/Lowongan";
 import { DetailLowongan } from "../pages/Landing/DetailLowongan";
 import { Tentang } from "../pages/Landing/Tentang";
-import { Login } from "../pages/Landing/Login";
-import { Daftar } from "../pages/Landing/Daftar";
 import { LupaKataSandi } from "../pages/Landing/LupaKataSandi";
 
 // Mahasiswa pages
 import { DashboardPage } from "../pages/Mahasiswa/DashboardPage";
 import { LowonganPage } from "../pages/Mahasiswa/LowonganPage";
 import { DetailLowonganPage } from "../pages/Mahasiswa/MahasiswaDetailLowongan";
-import { StatusList, StatusLihatBerkas, StatusDetailBerkas, StatusKonfirmasiKesediaan, StatusPembekalan, StatusPenandatanganan, StatusMulaiMagang } from "../pages/Mahasiswa/StatusPages";
+import {
+  StatusList,
+  StatusLihatBerkas,
+  StatusDetailBerkas,
+  StatusKonfirmasiKesediaan,
+  StatusPembekalan,
+  StatusPenandatanganan,
+  StatusMulaiMagang,
+} from "../pages/Mahasiswa/StatusPages";
 import { LogbookPage } from "../pages/Mahasiswa/LogbookPage";
 import { LaporanPage } from "../pages/Mahasiswa/LaporanPage";
 import { KalenderPage } from "../pages/Mahasiswa/KalenderPage";
-import { EditProfilePage } from "../pages/Mahasiswa/EditProfilePage";
+import MahasiswaSettingsPage from "../pages/Mahasiswa/SettingsPage";
 import { UnggahDokumenPage } from "../pages/Mahasiswa/UnggahDokumen";
-import { PertanyaanPerusahaanPage } from "../pages/Mahasiswa/PertanyaanPerusahaan";
 
 // ── Dashboard ──
 const DashboardWrapper = () => {
   const navigate = useNavigate();
-  return <DashboardPage onNavigate={(p: string) => navigate(`/mahasiswa/${p}`)} />;
+  return (
+    <DashboardPage onNavigate={(p: string) => navigate(`/mahasiswa/${p}`)} />
+  );
 };
 
 // ── Lowongan ──
@@ -36,7 +50,9 @@ const LowonganWrapper = () => {
   return (
     <LowonganPage
       onApply={() => navigate("/mahasiswa/upload")}
-      onViewDetail={(id: string | number) => navigate(`/mahasiswa/lowongan/${id}`)}
+      onViewDetail={(id: string | number) =>
+        navigate(`/mahasiswa/lowongan/${id}`)
+      }
     />
   );
 };
@@ -54,22 +70,17 @@ const MahasiswaDetailWrapper = () => {
 // ── Upload & Pertanyaan (pendaftaran flow) ──
 const UnggahDokumenWrapper = () => {
   const navigate = useNavigate();
+  const selectedLowongan = usePendaftaranStore(
+    (state) => state.selectedLowongan,
+  );
   return (
     <UnggahDokumenPage
       onBack={() => navigate("/mahasiswa/lowongan")}
-      onNext={() => navigate("/mahasiswa/pertanyaan")}
-      onViewDesc={() => navigate("/mahasiswa/lowongan/1")}
-    />
-  );
-};
-
-const PertanyaanWrapper = () => {
-  const navigate = useNavigate();
-  return (
-    <PertanyaanPerusahaanPage
-      onBack={() => navigate("/mahasiswa/upload")}
-      onNext={() => navigate("/mahasiswa/status")}
-      onViewDesc={() => navigate("/mahasiswa/lowongan/1")}
+      onViewDesc={() => {
+        if (selectedLowongan) {
+          navigate(`/mahasiswa/lowongan/${selectedLowongan.id_lowongan}`);
+        }
+      }}
     />
   );
 };
@@ -87,17 +98,25 @@ const StatusListWrapper = () => {
 
 const StatusLihatBerkasWrapper = () => {
   const navigate = useNavigate();
+  const setSelectedDocument = usePendaftaranStore(
+    (state) => state.setSelectedDocument,
+  );
   return (
     <StatusLihatBerkas
       onBack={() => navigate("/mahasiswa/status")}
-      onViewDetail={() => navigate("/mahasiswa/status-detail")}
+      onViewDetail={(document) => {
+        setSelectedDocument(document);
+        navigate("/mahasiswa/status-detail");
+      }}
     />
   );
 };
 
 const StatusDetailBerkasWrapper = () => {
   const navigate = useNavigate();
-  return <StatusDetailBerkas onBack={() => navigate("/mahasiswa/status-berkas")} />;
+  return (
+    <StatusDetailBerkas onBack={() => navigate("/mahasiswa/status-berkas")} />
+  );
 };
 
 const StatusKonfirmasiWrapper = () => {
@@ -137,11 +156,10 @@ const StatusMulaiMagangWrapper = () => {
 
 // ── Profile ──
 const EditProfileWrapper = () => {
-  const navigate = useNavigate();
-  return <EditProfilePage onBack={() => navigate(-1)} />;
+  return <MahasiswaSettingsPage />;
 };
 
-const noNavFooter = ["/login", "/daftar", "/lupa-kata-sandi"];
+const noNavFooter = ["/auth/login", "/auth/register", "/lupa-kata-sandi"];
 
 export function Root() {
   const location = useLocation();
@@ -164,14 +182,11 @@ export const LandingRoutes = (
     <Route path="lowongan" element={<Lowongan />} />
     <Route path="lowongan/:id" element={<DetailLowongan />} />
     <Route path="tentang" element={<Tentang />} />
-    <Route path="login" element={<Login />} />
-    <Route path="daftar" element={<Daftar />} />
-    <Route path="lupa-kata-sandi" element={<LupaKataSandi />} />
   </Route>
 );
 
 export const MahasiswaRoutes = (
-  <Route path="/mahasiswa" element={<Layout />}>
+  <Route path="/mahasiswa">
     <Route index element={<DashboardWrapper />} />
     <Route path="lowongan" element={<LowonganWrapper />} />
     <Route path="lowongan/:id" element={<MahasiswaDetailWrapper />} />
@@ -181,13 +196,15 @@ export const MahasiswaRoutes = (
     <Route path="status-detail" element={<StatusDetailBerkasWrapper />} />
     <Route path="status-konfirmasi" element={<StatusKonfirmasiWrapper />} />
     <Route path="status-pembekalan" element={<StatusPembekalanWrapper />} />
-    <Route path="status-penandatanganan" element={<StatusPenandatangananWrapper />} />
+    <Route
+      path="status-penandatanganan"
+      element={<StatusPenandatangananWrapper />}
+    />
     <Route path="status-mulai-magang" element={<StatusMulaiMagangWrapper />} />
     <Route path="logbook" element={<LogbookPage />} />
     <Route path="laporan" element={<LaporanPage />} />
     <Route path="kalender" element={<KalenderPage />} />
-    <Route path="profil" element={<EditProfileWrapper />} />
+    <Route path="settings" element={<EditProfileWrapper />} />
     <Route path="upload" element={<UnggahDokumenWrapper />} />
-    <Route path="pertanyaan" element={<PertanyaanWrapper />} />
   </Route>
 );

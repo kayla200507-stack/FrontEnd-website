@@ -1,5 +1,5 @@
 import { Users, User, Building2, BriefcaseBusiness} from "lucide-react";
-import { authStats } from "../tampilanAwalData";
+import { usePublicStats } from "../hooks/useStats";
 import logoVokasi from "../assets/images/vokasi.png";
 
 const statIcons = [
@@ -13,6 +13,15 @@ interface AuthLeftPanelProps {
 }
 
 export function AuthLeftPanel({ description }: AuthLeftPanelProps) {
+  const { data: statsResponse } = usePublicStats();
+  const statsData = statsResponse?.data;
+  
+  const authStats = [
+    { value: `${statsData?.lowongan_aktif || 0}+`, label: "Lowongan Aktif" },
+    { value: `${statsData?.perusahaan_mitra || 0}+`, label: "Perusahaan Mitra" },
+    { value: `${statsData?.mahasiswa_terdaftar || 0}+`, label: "Mahasiswa Terdaftar" },
+  ];
+
   return (
     <div
       className="w-[690px] shrink-0 h-screen sticky top-0 flex flex-col justify-between p-[60px] relative overflow-hidden"

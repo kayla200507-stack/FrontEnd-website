@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Search, MapPin, Clock, Calendar, CheckCircle, Users, Award, Building, Briefcase, GraduationCap, ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
-import { jobs, lowonganStats, partnerLogos, jobLogos } from "../../tampilanAwalData";
+import { usePublicStats } from "../../hooks/useStats";
+import { useLowongan } from "../../hooks/useLowongan";
 import dashboardImg from "../../assets/images/dashboard.png";
 
 const filterPills = ["Semua", "Remote", "Full Time", "Part Time", "Hybrid", "Teknologi", "Desain", "Marketing"];
@@ -27,19 +28,34 @@ const benefitCards = [
 export function Lowongan() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("Semua");
+  const { data: response, isLoading: isLowonganLoading } = useLowongan({ status_lowongan: 'active', per_page: 100 });
+  const { data: statsResponse } = usePublicStats();
+  
+  const allJobs = response?.data || [];
+  const statsData = statsResponse?.data;
+  
+  const lowonganStats = [
+    { label: "Perusahaan Mitra", value: `${statsData?.perusahaan_mitra || 0}+` },
+    { label: "Lowongan Magang", value: `${statsData?.lowongan_aktif || 0}+` },
+    { label: "Posisi Tersedia", value: "25+" }, // can be hardcoded or updated if backend provides it
+    { label: "Mahasiswa Terdaftar", value: `${statsData?.mahasiswa_terdaftar || 0}+` },
+  ];
 
-  const filtered = jobs.filter((j) => {
+  const filtered = allJobs.filter((j) => {
     const matchSearch =
-      j.title.toLowerCase().includes(search.toLowerCase()) ||
-      j.company.toLowerCase().includes(search.toLowerCase());
+      (j.judul || "").toLowerCase().includes(search.toLowerCase()) ||
+      (j.nama_perusahaan || "").toLowerCase().includes(search.toLowerCase());
+      
     let matchFilter = true;
     if (filter === "Remote") matchFilter = j.penempatan === "WFH";
-    else if (filter === "Full Time") matchFilter = j.type === "FULL TIME";
-    else if (filter === "Part Time") matchFilter = j.type === "PART TIME";
-    else if (filter === "Hybrid") matchFilter = false;
-    else if (filter === "Teknologi") matchFilter = ["Frontend", "Backend", "Networking"].includes(j.category);
-    else if (filter === "Desain") matchFilter = j.category === "Design";
-    else if (filter === "Marketing") matchFilter = j.category === "Marketing";
+    else if (filter === "Full Time") matchFilter = j.tipe_pekerjaan === "Full Time";
+    else if (filter === "Part Time") matchFilter = j.tipe_pekerjaan === "Part Time";
+    else if (filter === "Hybrid") matchFilter = j.penempatan === "Hybrid";
+    // For categories, just do simple string matching if we don't have exactly mapped ids
+    else if (filter === "Teknologi") matchFilter = (j.bidang_perusahaan || "").toLowerCase().includes("tech") || (j.judul || "").toLowerCase().includes("developer");
+    else if (filter === "Desain") matchFilter = (j.judul || "").toLowerCase().includes("design") || (j.judul || "").toLowerCase().includes("ui");
+    else if (filter === "Marketing") matchFilter = (j.judul || "").toLowerCase().includes("marketing");
+    
     return matchSearch && matchFilter;
   });
 
@@ -149,56 +165,55 @@ export function Lowongan() {
             Menampilkan <span className="font-semibold text-[#0a0a0a]">{filtered.length}</span> lowongan
           </p>
 
-          {filtered.length > 0 ? (
+          {isLowonganLoading ? (
+             <div className="text-center py-20">
+               <p className="font-['Poppins',sans-serif] text-[16px] text-[#94a3b8]">Memuat lowongan...</p>
+             </div>
+          ) : filtered.length > 0 ? (
             <div className="grid grid-cols-3 gap-8">
               {filtered.map((job) => (
-                <div key={job.id} className="bg-white rounded-[24px] border border-black/30 p-8 flex flex-col gap-5 shadow-[0px_4px_20px_-2px_rgba(0,0,0,0.05)] hover:shadow-md transition-shadow">
+                <div key={job.id_lowongan} className="bg-white rounded-[24px] border border-black/30 p-8 flex flex-col gap-5 shadow-[0px_4px_20px_-2px_rgba(0,0,0,0.05)] hover:shadow-md transition-shadow">
                   {/* Company Logo */}
                   <div className="bg-[#f3f4f6] rounded-[12px] size-[80px] flex items-center justify-center shrink-0">
-                    <img
-                      src={jobLogos[job.id]}
-                      alt={job.company}
-                      className="size-[64px] rounded-[10px] object-cover border border-black/20"
-                    />
+                    {job.logo_perusahaan ? (
+                      <img
+                        src={job.logo_perusahaan}
+                        alt={job.nama_perusahaan}
+                        className="size-[64px] rounded-[10px] object-cover border border-black/20"
+                      />
+                    ) : (
+                      <Building className="w-8 h-8 text-slate-400" />
+                    )}
                   </div>
 
                   {/* Company name + title */}
                   <div>
-                    <p className="font-['Poppins',sans-serif] font-semibold text-[14px] text-[#64748b] mb-1">{job.company}</p>
-                    <h3 className="font-['Poppins',sans-serif] font-bold text-[20px] text-[#2d4a8a] leading-[28px]">{job.title}</h3>
+                    <p className="font-['Poppins',sans-serif] font-semibold text-[14px] text-[#64748b] mb-1">{job.nama_perusahaan}</p>
+                    <h3 className="font-['Poppins',sans-serif] font-bold text-[20px] text-[#2d4a8a] leading-[28px]">{job.judul}</h3>
                   </div>
 
                   {/* Meta row */}
                   <div className="flex flex-wrap gap-4 text-[#94a3b8] text-[12px] font-['Poppins',sans-serif]">
                     <div className="flex items-center gap-1">
                       <MapPin size={16} />
-                      <span>{job.location.split(",")[0]}</span>
+                      <span>{job.lokasi?.split(",")[0]}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Clock size={16} />
-                      <span>{job.type === "FULL TIME" ? "Full Time" : "Part Time"}</span>
+                      <span>{job.tipe_pekerjaan}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Calendar size={16} />
-                      <span>{job.duration}</span>
+                      <span>{job.durasi}</span>
                     </div>
                   </div>
 
                   {/* Description */}
-                  <p className="font-['Poppins',sans-serif] text-[14px] text-[#64748b] leading-[20px] line-clamp-3">{job.description}</p>
-
-                  {/* Tags */}
-                  <div className="flex flex-wrap gap-2">
-                    {job.tags.slice(0, 3).map((tag) => (
-                      <span key={tag} className="bg-[#eff6ff] text-[#0f5bff] text-[12px] font-['Poppins',sans-serif] font-medium px-3 py-1 rounded-full">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
+                  <p className="font-['Poppins',sans-serif] text-[14px] text-[#64748b] leading-[20px] line-clamp-3">{job.deskripsi_singkat}</p>
 
                   {/* Detail Button */}
                   <Link
-                    to={`/lowongan/${job.id}`}
+                    to={`/lowongan/${job.id_lowongan}`}
                     className="w-full border border-black/20 text-black font-['Poppins',sans-serif] font-semibold text-[16px] py-[13px] rounded-[16px] text-center hover:bg-gray-50 transition-colors mt-auto"
                   >
                     Lihat Detail
@@ -215,7 +230,7 @@ export function Lowongan() {
       </section>
 
       {/* Benefit Cards */}
-      <section className="px-10 py-12">
+      <section className="px-10 py-12 pb-24">
         <div className="max-w-[1100px] mx-auto flex gap-14 items-start justify-center">
           {benefitCards.map((b) => (
             <div key={b.title} className="bg-white rounded-[24px] border border-black/30 p-8 flex-1 shadow-[0px_4px_20px_-2px_rgba(0,0,0,0.05)]">
@@ -226,25 +241,6 @@ export function Lowongan() {
               <p className="font-['Poppins',sans-serif] text-[12px] text-[#64748b] leading-[20px]">{b.desc}</p>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* Perusahaan Mitra Kami */}
-      <section className="py-14 px-10 bg-white">
-        <div className="max-w-[1200px] mx-auto">
-          <div className="text-center mb-2">
-            <h2 className="font-['Poppins',sans-serif] font-bold text-[26px] text-[#191b24] mb-3">Perusahaan Mitra Kami</h2>
-            <p className="font-['Poppins',sans-serif] font-semibold text-[18px] text-[#434656] max-w-[800px] mx-auto">
-              Bekerja sama dengan perusahaan-perusahaan terpercaya untuk menyediakan peluang magang terbaik bagi mahasiswa
-            </p>
-          </div>
-          <div className="grid grid-cols-8 gap-4 py-9">
-            {partnerLogos.map((src, i) => (
-              <div key={i} className="aspect-square relative overflow-hidden">
-                <img src={src} alt={`Mitra ${i + 1}`} className="w-full h-full object-cover" />
-              </div>
-            ))}
-          </div>
         </div>
       </section>
     </div>

@@ -1,15 +1,20 @@
 import { BriefcaseBusiness, Building2, User, Users } from "lucide-react";
 import { Outlet } from "react-router-dom";
 import { Toaster } from "../components/ui/sonner";
+import { usePublicStats } from "../hooks/useStats";
+import logoVokasi from "../assets/images/vokasi.png";
 
 export default function AuthLayout() {
+  const { data: statsResponse } = usePublicStats();
+  const statsData = statsResponse?.data;
+  
   return (
     <div className="min-h-screen flex w-full font-sans">
       {/* Left Panel - Blue Section */}
       <div className="hidden lg:flex lg:w-[45%] bg-[#0A46D2] p-12 flex-col justify-between text-white relative overflow-hidden">
         <div>
           {/* Logo / Header */}
-          <h2 className="font-bold text-lg tracking-wide">Vokasi Magang</h2>
+          <img src={logoVokasi} alt="Logo Vokasi" className="w-12 h-auto object-contain" />
 
           {/* Main Copy */}
           <div className="mt-16">
@@ -54,7 +59,7 @@ export default function AuthLayout() {
               <BriefcaseBusiness size={20} className="text-white" />
             </div>
             <div>
-              <p className="font-bold text-lg leading-tight">2000+</p>
+              <p className="font-bold text-lg leading-tight">{statsData?.lowongan_aktif || 0}+</p>
               <p className="text-[9px] text-blue-200 tracking-wider font-semibold uppercase mt-0.5">
                 Lowongan
                 <br />
@@ -67,7 +72,7 @@ export default function AuthLayout() {
               <Building2 size={20} className="text-white" />
             </div>
             <div>
-              <p className="font-bold text-lg leading-tight">50+</p>
+              <p className="font-bold text-lg leading-tight">{statsData?.perusahaan_mitra || 0}+</p>
               <p className="text-[9px] text-blue-200 tracking-wider font-semibold uppercase mt-0.5">
                 Perusahaan
                 <br />
@@ -80,11 +85,11 @@ export default function AuthLayout() {
               <Users size={20} className="text-white" />
             </div>
             <div>
-              <p className="font-bold text-lg leading-tight">3500+</p>
+              <p className="font-bold text-lg leading-tight">{statsData?.mahasiswa_terdaftar || 0}+</p>
               <p className="text-[9px] text-blue-200 tracking-wider font-semibold uppercase mt-0.5">
-                Pengguna
+                Mahasiswa
                 <br />
-                Aktif
+                Terdaftar
               </p>
             </div>
           </div>

@@ -1,19 +1,22 @@
 import React from "react";
-import { X } from "lucide-react";
-import type { Student } from "../../../data/dosenMockData";
+import { Modal } from "../../common/Modal";
 
 interface StudentDetailModalProps {
-  student: Student;
+  student: any; // Magang data extended with UI properties
   onClose: () => void;
+  isOpen: boolean;
 }
 
 export const StudentDetailModal: React.FC<StudentDetailModalProps> = ({
   student,
   onClose,
+  isOpen,
 }) => {
-  const getStatusColor = (status: Student["status"]): string => {
+  if (!student) return null;
+
+  const getStatusColor = (status: string): string => {
     switch (status) {
-      case "Sedang Magang":
+      case "Aktif":
         return "bg-yellow-100 text-yellow-800 border-yellow-200";
       case "Selesai":
         return "bg-green-100 text-green-800 border-green-200";
@@ -37,187 +40,191 @@ export const StudentDetailModal: React.FC<StudentDetailModalProps> = ({
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md border border-slate-200 max-h-[85vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-start justify-between p-4 border-b border-slate-100">
-          <div>
-            <h2 className="text-base font-bold text-slate-900">
-              Detail Mahasiswa
-            </h2>
-            <p className="text-[11px] text-slate-500 mt-0.5">
-              Informasi lengkap mahasiswa bimbingan
-            </p>
-          </div>
+  const tanggalMulai = student.tanggal_mulai
+    ? new Date(student.tanggal_mulai).toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : "-";
 
-          <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 transition-colors"
-          >
-            <X size={18} />
-          </button>
+  const tanggalSelesai = student.tanggal_selesai
+    ? new Date(student.tanggal_selesai).toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : "-";
+
+  const email = student.mahasiswa?.user?.email || "-";
+  const phone = student.mahasiswa?.user?.profile?.no_hp || "-";
+  const prodi = student.mahasiswa?.prodi || "-";
+  const ipk = student.mahasiswa?.ipk ? Number(student.mahasiswa.ipk).toFixed(2) : "-";
+  const statusLaporan = student.statusLaporan || "Belum Mulai"; // TODO: get from backend when Laporan is integrated
+  const nilai = student.nilai || "Belum ada nilai"; // TODO: get from backend when Penilaian is integrated
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Detail Mahasiswa"
+      description="Informasi lengkap mahasiswa bimbingan"
+      footer={null}
+    >
+      <div className="space-y-6">
+        {/* Informasi Pribadi */}
+        <div>
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+            Informasi Pribadi
+          </h3>
+
+          <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+            <div>
+              <p className="font-medium text-slate-400 text-xs">NIM</p>
+              <p className="text-slate-800 font-bold mt-1">{student.nim}</p>
+            </div>
+
+            <div>
+              <p className="font-medium text-slate-400 text-xs">
+                Nama Lengkap
+              </p>
+              <p className="text-slate-800 font-bold mt-1">
+                {student.nama}
+              </p>
+            </div>
+
+            <div>
+              <p className="font-medium text-slate-400 text-xs">Email</p>
+              <p className="text-slate-700 font-medium mt-1">{email}</p>
+            </div>
+
+            <div>
+              <p className="font-medium text-slate-400 text-xs">
+                Telepon
+              </p>
+              <p className="text-slate-700 font-medium mt-1">{phone}</p>
+            </div>
+
+            <div>
+              <p className="font-medium text-slate-400 text-xs">
+                Program Studi
+              </p>
+              <p className="text-slate-700 font-medium mt-1">{prodi}</p>
+            </div>
+
+            <div>
+              <p className="font-medium text-slate-400 text-xs">IPK</p>
+              <p className="font-bold text-slate-900 mt-1">
+                {ipk}
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* Content */}
-        <div className="p-4 space-y-4 text-xs">
-          {/* Informasi Pribadi */}
-          <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-              Informasi Pribadi
-            </h3>
+        <hr className="border-slate-100" />
 
-            <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
-              <div>
-                <p className="font-medium text-slate-400 text-[11px]">NIM</p>
-                <p className="text-slate-800 font-semibold mt-0.5">{student.nim}</p>
-              </div>
+        {/* Informasi Magang */}
+        <div>
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+            Informasi Magang
+          </h3>
 
-              <div>
-                <p className="font-medium text-slate-400 text-[11px]">
-                  Nama Lengkap
-                </p>
-                <p className="text-slate-800 font-semibold mt-0.5">
-                  {student.name}
-                </p>
-              </div>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+            <div>
+              <p className="font-medium text-slate-400 text-xs">
+                Perusahaan
+              </p>
+              <p className="text-slate-700 font-bold mt-1">{student.perusahaan}</p>
+            </div>
 
-              <div>
-                <p className="font-medium text-slate-400 text-[11px]">Email</p>
-                <p className="text-slate-700 mt-0.5">{student.email}</p>
-              </div>
+            <div>
+              <p className="font-medium text-slate-400 text-xs">Posisi</p>
+              <p className="text-slate-700 font-bold mt-1">{student.posisi}</p>
+            </div>
 
-              <div>
-                <p className="font-medium text-slate-400 text-[11px]">
-                  Telepon
-                </p>
-                <p className="text-slate-700 mt-0.5">{student.phone}</p>
-              </div>
+            <div>
+              <p className="font-medium text-slate-400 text-xs">
+                Tanggal Mulai
+              </p>
+              <p className="text-slate-700 font-medium mt-1">{tanggalMulai}</p>
+            </div>
 
-              <div>
-                <p className="font-medium text-slate-400 text-[11px]">
-                  Program Studi
-                </p>
-                <p className="text-slate-700 mt-0.5">{student.programStudi}</p>
-              </div>
-
-              <div>
-                <p className="font-medium text-slate-400 text-[11px]">IPK</p>
-                <p className="font-bold text-slate-900 mt-0.5">
-                  {student.ipk.toFixed(2)}
-                </p>
-              </div>
+            <div>
+              <p className="font-medium text-slate-400 text-xs">
+                Tanggal Selesai
+              </p>
+              <p className="text-slate-700 font-medium mt-1">{tanggalSelesai}</p>
+            </div>
+            
+            <div>
+              <p className="font-medium text-slate-400 text-xs">
+                Nilai Akhir
+              </p>
+              <p className="text-blue-700 font-bold mt-1">{nilai}</p>
             </div>
           </div>
 
-          <hr className="border-slate-100" />
+          <div className="mt-4">
+            <p className="font-medium text-slate-400 text-xs mb-2">
+              Status Magang
+            </p>
 
-          {/* Informasi Magang */}
-          <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-              Informasi Magang
-            </h3>
+            <span
+              className={`inline-flex px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(
+                student.status_magang
+              )}`}
+            >
+              {student.status_magang}
+            </span>
+          </div>
+        </div>
 
-            <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
-              <div>
-                <p className="font-medium text-slate-400 text-[11px]">
-                  Perusahaan
-                </p>
-                <p className="text-slate-700 mt-0.5">{student.perusahaan}</p>
-              </div>
+        <hr className="border-slate-100" />
 
-              <div>
-                <p className="font-medium text-slate-400 text-[11px]">Posisi</p>
-                <p className="text-slate-700 mt-0.5">{student.posisi}</p>
-              </div>
+        {/* Progress Aktivitas */}
+        <div>
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+            Progress Aktivitas
+          </h3>
 
-              <div>
-                <p className="font-medium text-slate-400 text-[11px]">
-                  Tanggal Mulai
-                </p>
-                <p className="text-slate-700 mt-0.5">{student.tanggalMulai}</p>
-              </div>
-
-              <div>
-                <p className="font-medium text-slate-400 text-[11px]">
-                  Tanggal Selesai
-                </p>
-                <p className="text-slate-700 mt-0.5">30 Juni 2026</p>
-              </div>
-            </div>
-
-            <div className="mt-3">
-              <p className="font-medium text-slate-400 text-[11px] mb-1">
-                Status Magang
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <p className="font-medium text-slate-400 text-xs mb-2">
+                Progress Durasi Magang (6 Bulan)
               </p>
 
-              <span
-                className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold border ${getStatusColor(
-                  student.status
-                )}`}
-              >
-                {student.status}
-              </span>
-            </div>
-          </div>
-
-          <hr className="border-slate-100" />
-
-          {/* Progress Aktivitas */}
-          <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-              Progress Aktivitas
-            </h3>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="font-medium text-slate-400 text-[11px] mb-1">
-                  Progress Logbook
-                </p>
-
-                <div className="flex items-center gap-2 mt-1">
-                  <div className="flex-1 h-1.5 bg-slate-100 border border-slate-200 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-green-500"
-                      style={{
-                        width: `${student.progress}%`,
-                      }}
-                    />
-                  </div>
-
-                  <span className="font-bold text-slate-700 text-[10px]">
-                    {student.progress}%
-                  </span>
+              <div className="flex items-center gap-3 mt-1">
+                <div className="flex-1 h-2 bg-slate-100 border border-slate-200 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-green-500 rounded-full shadow-sm transition-all duration-1000"
+                    style={{
+                      width: `${student.progress}%`,
+                    }}
+                  />
                 </div>
-              </div>
 
-              <div>
-                <p className="font-medium text-slate-400 text-[11px] mb-1">
-                  Status Laporan
-                </p>
-
-                <span
-                  className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold border ${getLaporanColor(
-                    student.statusLaporan
-                  )}`}
-                >
-                  {student.statusLaporan}
+                <span className="font-bold text-slate-700 text-xs">
+                  {student.progress}%
                 </span>
               </div>
             </div>
+
+            <div>
+              <p className="font-medium text-slate-400 text-xs mb-2">
+                Status Laporan
+              </p>
+
+              <span
+                className={`inline-flex px-3 py-1 rounded-full text-xs font-bold border ${getLaporanColor(
+                  statusLaporan
+                )}`}
+              >
+                {statusLaporan}
+              </span>
+            </div>
           </div>
         </div>
-
-        {/* Footer */}
-        <div className="border-t border-slate-100 px-4 py-2.5 flex justify-end">
-          <button
-            onClick={onClose}
-            className="px-4 py-1.5 border border-slate-300 rounded-lg hover:bg-slate-50 text-[11px] font-semibold transition-colors"
-          >
-            Tutup
-          </button>
-        </div>
       </div>
-    </div>
+    </Modal>
   );
 };

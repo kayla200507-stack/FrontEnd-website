@@ -2,8 +2,7 @@ import { Check } from "lucide-react";
 
 export function StepProgress({ currentStep }: { currentStep: number }) {
   const steps = [
-    { num: 1, label: "Unggah dokumen" },
-    { num: 2, label: "Pertanyaan Perusahaan" },
+    { num: 1, label: "Form pendaftaran" },
   ];
   return (
     <div className="flex items-start justify-center gap-6 mb-6">
