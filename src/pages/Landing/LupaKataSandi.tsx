@@ -34,7 +34,7 @@ export function LupaKataSandi() {
               </p>
             </div>
             <Link
-              to="/login"
+              to="/auth/login"
               className="flex items-center gap-[8px] font-['Poppins',sans-serif] font-semibold text-[14px] text-[#2563eb] leading-[20px] hover:underline"
             >
               <ArrowLeft size={16} />
@@ -85,7 +85,7 @@ export function LupaKataSandi() {
 
             {/* Back link */}
             <Link
-              to="/login"
+              to="/auth/login"
               className="flex items-center gap-[8px] font-['Poppins',sans-serif] font-semibold text-[14px] text-[#2563eb] leading-[20px] hover:underline"
             >
               <ArrowLeft size={16} />

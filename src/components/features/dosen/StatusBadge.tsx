@@ -1,9 +1,9 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
-import { Award, CheckCircle, Clock } from "lucide-react";
+import { Award, CheckCircle, Clock, XCircle } from "lucide-react";
 
 interface Props {
-  status: "pending" | "assessed" | "completed";
+  status: "pending" | "assessed" | "completed" | "uncompleted";
 }
 
 const StatusBadge: React.FC<Props> = ({ status }) => {
@@ -22,6 +22,11 @@ const StatusBadge: React.FC<Props> = ({ status }) => {
       icon: Award,
       text: "Selesai",
       className: "bg-blue-100 text-blue-700",
+    },
+    uncompleted: {
+      icon: XCircle,
+      text: "Belum Selesai",
+      className: "bg-red-100 text-red-700",
     },
   };
 

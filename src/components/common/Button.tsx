@@ -12,9 +12,9 @@ export const Button = ({
   children,
 }: ButtonProps) => {
   const variants = {
-    primary: "bg-black text-white",
-    outline: "bg-white border-1 text-black border-black/30",
-    destructive: "bg-red-500 text-white",
+    primary: "bg-primary text-white hover:bg-primary/90 transition-colors",
+    outline: "bg-white border-1 text-primary border-primary/30 hover:bg-primary/5 transition-colors",
+    destructive: "bg-red-500 text-white hover:bg-red-600 transition-colors",
   };
 
   const sizes = {

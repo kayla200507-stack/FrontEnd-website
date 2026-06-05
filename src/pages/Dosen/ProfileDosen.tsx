@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { ProfileAvatarCard } from "../../components/features/dosen/profile/ProfileAvatarCard";
 import { ProfileForm } from "../../components/features/dosen/profile/ProfileForm";
+import DashboardHeader from "../../components/features/dosen/DashboardHeader.tsx";
 
 const INITIAL_PROFILE = {
   nama: "Dr. Budi Aziz, M.Kom.",
@@ -43,26 +44,26 @@ const ProfileDosenPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F6F8] p-4 sm:p-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-5 gap-4">
-        <div>
-          <h1 className="text-[24px] sm:text-[28px] font-bold text-[#4769B1]">Edit Profil</h1>
-        </div>
-        <div className="flex gap-3">
-          <button
-            onClick={handleCancel}
-            className="px-6 sm:px-8 h-10 rounded-full border border-[#D1D5DB] bg-white text-sm font-medium text-[#374151]"
-          >
-            Batal
-          </button>
-          <button
-            onClick={handleSave}
-            className="px-6 sm:px-8 h-10 rounded-full bg-[#4769B1] text-white text-sm font-medium hover:bg-[#3f5d9f]"
-          >
-            Simpan
-          </button>
-        </div>
-      </div>
+    <div className="p-6">
+      <DashboardHeader
+        title="Edit Profil"
+        actions={
+          <div className="flex gap-3">
+            <button
+              onClick={handleCancel}
+              className="px-6 sm:px-8 h-10 rounded-full border border-[#D1D5DB] bg-white text-sm font-medium text-[#374151]"
+            >
+              Batal
+            </button>
+            <button
+              onClick={handleSave}
+              className="px-6 sm:px-8 h-10 rounded-full bg-[#4769B1] text-white text-sm font-medium hover:bg-[#3f5d9f]"
+            >
+              Simpan
+            </button>
+          </div>
+        }
+      />
 
       <ProfileAvatarCard
         profile={profile}

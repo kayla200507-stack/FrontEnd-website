@@ -1,7 +1,6 @@
 // src/pages/Auth/Admin/DataMahasiswa.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AdminLayout } from '../../layouts/AdminLayout';
 import { 
   Search, 
   Eye, 
@@ -11,8 +10,10 @@ import {
   Mail, 
   Phone, 
   MapPin, 
-  Download 
+  Download,
+  Loader2
 } from 'lucide-react';
+import { useUsers } from '../../hooks/useUsers';
 
 const DataMahasiswa = () => {
   const [activeMenu, setActiveMenu] = useState('data-mahasiswa');
@@ -25,79 +26,52 @@ const DataMahasiswa = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMahasiswa, setSelectedMahasiswa] = useState<any>(null);
 
-  // Data mahasiswa tetap dipertahankan sesuai milikmu
-  const mahasiswaData = [
-    {
-      nim: '11210001',
-      nama: 'Budi Santoso',
-      prodi: 'Teknik Informatika',
-      semester: 6,
-      ipk: 3.75,
-      perusahaan: 'PT Teknologi Maju',
-      status: 'Sedang Magang',
-      email: 'budi.santoso@email.com',
-      telepon: '081234567890',
-      alamat: 'Jakarta Selatan',
-      tanggalMulai: '1 Maret 2026',
-      tanggalSelesai: '30 Juni 2026'
-    },
-    {
-      nim: '11210002',
-      nama: 'Siti Rahmawati',
-      prodi: 'Sistem Informasi',
-      semester: 6,
-      ipk: 3.75,
-      perusahaan: 'PT Digital Kreatif',
-      status: 'Sedang Magang',
-      email: 'siti.rahma@email.com',
-      telepon: '082134567891',
-      alamat: 'Jakarta Barat',
-      tanggalMulai: '15 Februari 2026',
-      tanggalSelesai: '15 Agustus 2026'
-    },
-    {
-      nim: '11210003',
-      nama: 'Ahmad Fauzi',
-      prodi: 'Teknik Informatika',
-      semester: 6,
-      ipk: 3.75,
-      perusahaan: 'PT Inovasi Sistem',
-      status: 'Mencari',
-      email: 'ahmad.fauzi@email.com',
-      telepon: '083134567892',
-      alamat: 'Depok',
-      tanggalMulai: '-',
-      tanggalSelesai: '-'
-    },
-    {
-      nim: '11210004',
-      nama: 'Dewi Lestari',
-      prodi: 'Teknik Komputer',
-      semester: 6,
-      ipk: 3.75,
-      perusahaan: 'PT Media Online',
-      status: 'Selesai',
-      email: 'dewi.lestari@email.com',
-      telepon: '084134567893',
-      alamat: 'Tangerang',
-      tanggalMulai: '1 September 2025',
-      tanggalSelesai: '1 Maret 2026'
-    },
-    {
-      nim: '11210005',
-      nama: 'Rudi Hermawan',
-      prodi: 'Sistem Informasi',
-      semester: 6,
-      ipk: 3.75,
-      perusahaan: 'PT Solusi Digital',
-      status: 'Mencari',
-      email: 'rudi.hermawan@email.com',
-      telepon: '085134567894',
-      alamat: 'Bekasi',
-      tanggalMulai: '-',
-      tanggalSelesai: '-'
+  const { data: response, isLoading } = useUsers({ role: 'mahasiswa' });
+
+  // Map API response to the required format
+  const rawData = response?.data || [];
+  const mahasiswaData = rawData.map((user: any) => {
+    const mhs = user.mahasiswa;
+    const profile = user.profile;
+
+    let status = 'Mencari';
+    let perusahaan = '-';
+    let tanggalMulai = '-';
+    let tanggalSelesai = '-';
+
+    if (mhs?.magangs && mhs.magangs.length > 0) {
+      const activeMagang = mhs.magangs.find((m: any) => m.status_magang === 'Aktif') || mhs.magangs[0];
+      status = activeMagang.status_magang === 'Aktif' ? 'Sedang Magang' : 'Selesai';
+      tanggalMulai = activeMagang.tanggal_mulai ? new Date(activeMagang.tanggal_mulai).toLocaleDateString('id-ID') : '-';
+      tanggalSelesai = activeMagang.tanggal_selesai ? new Date(activeMagang.tanggal_selesai).toLocaleDateString('id-ID') : '-';
+
+      const acceptedPendaftaran = mhs.pendaftarans?.find((p: any) => p.status_pendaftaran === 'Diterima');
+      if (acceptedPendaftaran?.lowongan) {
+        perusahaan = acceptedPendaftaran.lowongan.nama_perusahaan;
+      }
+    } else if (mhs?.pendaftarans && mhs.pendaftarans.length > 0) {
+      const pending = mhs.pendaftarans.find((p: any) => p.status_pendaftaran === 'Pending');
+      if (pending) {
+        status = 'Menunggu Verifikasi';
+        perusahaan = pending.lowongan?.nama_perusahaan || '-';
+      }
     }
-  ];
+
+    return {
+      nim: mhs?.nim || '-',
+      nama: profile?.nama || user.email || '-',
+      prodi: mhs?.prodi || '-',
+      semester: mhs?.semester || '-',
+      ipk: mhs?.ipk || '-',
+      perusahaan,
+      status,
+      email: user.email || '-',
+      telepon: profile?.no_telp || '-',
+      alamat: profile?.alamat || '-',
+      tanggalMulai,
+      tanggalSelesai
+    };
+  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -138,7 +112,7 @@ const DataMahasiswa = () => {
   };
 
   const handleLogout = () => {
-    navigate('/admin/login');
+    navigate('/auth/login');
   };
 
   // Fungsi membuka pop up detail
@@ -155,21 +129,22 @@ const DataMahasiswa = () => {
   };
 
   return (
-    <AdminLayout
-      title="Data Mahasiswa"
-      breadcrumb={['Data Mahasiswa']}
-      activeMenu={activeMenu}
-      onMenuChange={handleMenuChange}
-      onLogout={handleLogout}
-    >
+    <>
       {/* Header Section */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Data Mahasiswa</h1>
         <p className="text-sm text-gray-500 mt-1">Kelola data mahasiswa yang terdaftar dalam program magang</p>
       </div>
 
-      {/* Filter Section */}
-      <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center min-h-[400px]">
+          <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
+          <p className="mt-4 text-gray-500 font-medium">Memuat data mahasiswa...</p>
+        </div>
+      ) : (
+        <>
+          {/* Filter Section */}
+          <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
         <div className="flex flex-wrap gap-4 items-center justify-between">
           <div className="flex-1 min-w-[250px]">
             <div className="relative">
@@ -416,7 +391,9 @@ const DataMahasiswa = () => {
           </div>
         </div>
       )}
-    </AdminLayout>
+        </>
+      )}
+    </>
   );
 };
 

@@ -1,6 +1,9 @@
-import imgImage3 from "../../assets/images/company-1.png";
-import imgImage5 from "../../assets/images/company-2.png";
-import imgImage8 from "../../assets/images/company-3.png";
+import { useParams, useNavigate } from "react-router-dom";
+import { useLowonganDetail, useLowongan } from "../../hooks/useLowongan";
+import { useMyPendaftaran } from "../../hooks/usePendaftaran";
+import { Building2, Loader2, Info } from "lucide-react";
+import type { Lowongan } from "../../services/lowonganService";
+import { usePendaftaranStore } from "../../stores/pendaftaranStore";
 
 const svgPaths = {
   p45c1540: "M10.5 5.667c0 1.013-.821 1.833-1.833 1.833a1.834 1.834 0 0 1-1.834-1.833c0-1.013.821-1.834 1.834-1.834 1.012 0 1.833.821 1.833 1.834Zm-5.5 0c0 1.013-.821 1.833-1.833 1.833A1.834 1.834 0 0 1 1.333 5.667c0-1.013.821-1.834 1.834-1.834C4.179 3.833 5 4.654 5 5.667Zm9.167 0c0 1.013-.821 1.833-1.834 1.833a1.834 1.834 0 0 1-1.833-1.833c0-1.013.821-1.834 1.833-1.834 1.013 0 1.834.821 1.834 1.834ZM8.667 9.333c1.287 0 2.333.596 2.333 1.334V12H6V10.667c0-.738 1.046-1.334 2.333-1.334h.334Zm-5.5 0c1.287 0 2.333.596 2.333 1.334V12H.333v-1.333c0-.738 1.046-1.334 2.334-1.334Zm8.166 0c1.288 0 2.334.596 2.334 1.334V12h-5.167v-1.333c0-.738 1.046-1.334 2.333-1.334Z",
@@ -40,92 +43,131 @@ function CheckCircleIcon() {
 }
 
 export function DetailLowonganPage({ onBack, onApply }: Props) {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const setLowongan = usePendaftaranStore((state) => state.setLowongan);
+  
+  // Fetch specific job detail
+  const { data: detailResponse, isLoading: isLoadingDetail, isError: isErrorDetail } = useLowonganDetail(id || "");
+  const job = detailResponse?.data;
+
+  // Fetch list for the sidebar
+  const { data: listResponse, isLoading: isLoadingList } = useLowongan();
+
+  // Fetch student applications
+  const { data: myApplications } = useMyPendaftaran();
+  const appliedJobIds = (myApplications?.data || []).map((app: any) => app.id_lowongan);
+  const isAlreadyApplied = job ? appliedJobIds.includes(job.id_lowongan) : false;
+  
+  // Defensive check for paginated response
+  const rawData = listResponse as any;
+  const sidebarJobs: Lowongan[] = Array.isArray(rawData?.data) 
+    ? rawData.data 
+    : (Array.isArray(rawData?.data?.data) ? rawData.data.data : []);
+
+  const formatDate = (dateStr?: string | null) => {
+    if (!dateStr) return "-";
+    return new Date(dateStr).toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
+  const getDaysLeft = (dateStr?: string | null) => {
+    if (!dateStr) return null;
+    const deadline = new Date(dateStr);
+    const today = new Date();
+    const diffTime = deadline.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 0;
+  };
+
+  if (isLoadingDetail || isLoadingList) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+        <Loader2 className="w-12 h-12 animate-spin text-[#3a60a0]" />
+        <p className="mt-4 text-gray-500 font-medium">Memuat informasi lowongan...</p>
+      </div>
+    );
+  }
+
+  if (isErrorDetail || !job) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-6 text-center">
+        <div className="bg-red-50 p-4 rounded-full mb-4">
+          <Info className="w-10 h-10 text-red-500" />
+        </div>
+        <h2 className="text-xl font-bold text-gray-800">Lowongan Tidak Ditemukan</h2>
+        <p className="text-gray-500 mt-2 max-w-md">Maaf, informasi lowongan yang Anda cari tidak tersedia.</p>
+        <button onClick={onBack} className="mt-8 px-8 py-3 bg-[#3a60a0] text-white rounded-2xl font-bold">
+          Kembali ke Daftar
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="relative bg-[#f3f4f6] min-h-full">
       {/* ── Two-column layout ── */}
-      <div className="flex h-full">
+      <div className="flex flex-col lg:flex-row h-full">
 
-        {/* ── Column A: Job Cards List ── */}
-        <div className="w-[412px] shrink-0 relative py-6 pl-[35px] pr-2 flex flex-col gap-0">
+        {/* ── Column A: Job Cards List (Hidden on Mobile) ── */}
+        <div className="hidden lg:flex w-[412px] shrink-0 relative py-6 pl-[35px] pr-2 flex-col gap-0">
+          {sidebarJobs.map((item) => {
+            const daysLeft = getDaysLeft(item.batas_lamaran);
+            const isActive = String(item.id_lowongan) === id;
+            const isApplied = appliedJobIds.includes(item.id_lowongan);
+            
+            return (
+              <div 
+                key={item.id_lowongan}
+                onClick={() => navigate(`/mahasiswa/lowongan/${item.id_lowongan}`)}
+                className={`bg-white rounded-[23px] p-7 mb-[18px] relative cursor-pointer transition-all ${
+                  isActive 
+                    ? "border-[#3a60a0] border-2 shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.02),0px_10px_15px_-3px_rgba(0,0,0,0.03)]" 
+                    : "border border-[#e2e8f0] drop-shadow-[0px_0.964px_0.964px_rgba(0,0,0,0.05)] hover:border-blue-200"
+                }`}
+              >
+                {/* Logo + deadline */}
+                <div className="flex items-start justify-between mb-5">
+                  <div className="bg-[#f8f9fc] border border-[rgba(226,232,240,0.3)] rounded-[15px] size-[54px] flex items-center justify-center shrink-0">
+                    {item.logo_perusahaan ? (
+                      <img alt={item.nama_perusahaan} className="size-[40px] object-cover rounded-[7px]" src={item.logo_perusahaan} />
+                    ) : (
+                      <Building2 className="text-blue-500 w-6 h-6" />
+                    )}
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    {isApplied && (
+                      <span className="bg-green-50 text-green-600 text-[9px] font-bold px-2 py-0.5 rounded-full border border-green-200 uppercase text-center">Sudah Terdaftar</span>
+                    )}
+                    {daysLeft !== null && (
+                      <div className={`${daysLeft <= 3 ? "bg-[rgba(254,226,226,0.5)]" : "bg-[#f1f5f9]"} h-[24px] px-3 rounded-full flex items-center`}>
+                        <span className={`font-['Poppins:Bold',sans-serif] text-[10.6px] ${daysLeft <= 3 ? "text-[#dc2626]" : "text-[#64748b]"} tracking-[-0.27px] whitespace-nowrap uppercase`}>
+                          {daysLeft === 0 ? "TUTUP HARI INI" : daysLeft === 1 ? "TUTUP BESOK" : `${daysLeft} HARI LAGI`}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
 
-          {/* Job Card 1 – Active (Frontend Developer) */}
-          <div className="bg-white border-[#3a60a0] border-2 rounded-[23px] p-7 mb-[18px] relative shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.02),0px_10px_15px_-3px_rgba(0,0,0,0.03)]">
-            {/* Logo + deadline */}
-            <div className="flex items-start justify-between mb-5">
-              <div className="bg-[#f8f9fc] border border-[rgba(226,232,240,0.3)] rounded-[15px] size-[54px] flex items-center justify-center shrink-0">
-                <img alt="PT Teknologi Maju" className="size-[40px] object-cover rounded-[7px]" src={imgImage3} />
+                <p className="font-['Poppins:SemiBold',sans-serif] text-[17.4px] text-[#1a1c21] leading-[27px] mb-1 truncate">{item.judul}</p>
+                <p className="font-['Poppins:Medium',sans-serif] text-[13.5px] text-[#64748b] leading-[19px] mb-4 truncate">{item.lokasi}</p>
+
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <span className="bg-[#e8fdf5] h-6 px-3 rounded-full flex items-center font-['Poppins:Bold',sans-serif] text-[10.6px] text-[#006c49] tracking-[0.53px] uppercase whitespace-nowrap">MAGANG</span>
+                  <span className="bg-[#f1f5f9] h-6 px-3 rounded-full flex items-center font-['Poppins:Bold',sans-serif] text-[10.6px] text-[#64748b] tracking-[0.53px] uppercase whitespace-nowrap">{item.durasi}</span>
+                  <span className="bg-[#f1f5f9] h-6 px-3 rounded-full flex items-center font-['Poppins:Bold',sans-serif] text-[10.6px] text-[#64748b] tracking-[0.53px] uppercase whitespace-nowrap">{item.penempatan}</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <UsersIcon />
+                  <span className="font-['Poppins:Medium',sans-serif] text-[11.6px] text-[#94a3b8] leading-[15px]">{item.kuota} Posisi Tersedia</span>
+                </div>
               </div>
-              <div className="bg-[rgba(254,226,226,0.5)] h-[24px] px-3 rounded-full flex items-center">
-                <span className="font-['Poppins:Bold',sans-serif] text-[10.6px] text-[#dc2626] tracking-[-0.27px] whitespace-nowrap">5 HARI LAGI</span>
-              </div>
-            </div>
-
-            <p className="font-['Poppins:SemiBold',sans-serif] text-[17.4px] text-[#1a1c21] leading-[27px] mb-1">Frontend Developer</p>
-            <p className="font-['Poppins:Medium',sans-serif] text-[13.5px] text-[#64748b] leading-[19px] mb-4">Jakarta</p>
-
-            <div className="flex gap-2 mb-4">
-              <span className="bg-[#e8fdf5] h-6 px-3 rounded-full flex items-center font-['Poppins:Bold',sans-serif] text-[10.6px] text-[#006c49] tracking-[0.53px] uppercase whitespace-nowrap">MAGANG</span>
-              <span className="bg-[#f1f5f9] h-6 px-3 rounded-full flex items-center font-['Poppins:Bold',sans-serif] text-[10.6px] text-[#64748b] tracking-[0.53px] uppercase whitespace-nowrap">5 BULAN</span>
-              <span className="bg-[#f1f5f9] h-6 px-3 rounded-full flex items-center font-['Poppins:Bold',sans-serif] text-[10.6px] text-[#64748b] tracking-[0.53px] uppercase whitespace-nowrap">ONSITE</span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <UsersIcon />
-              <span className="font-['Poppins:Medium',sans-serif] text-[11.6px] text-[#94a3b8] leading-[15px]">1 Posisi • 98 Pelamar</span>
-            </div>
-          </div>
-
-          {/* Job Card 2 – UI/UX Designer */}
-          <div className="bg-white border border-[#e2e8f0] rounded-[23px] p-7 mb-[18px] relative drop-shadow-[0px_0.964px_0.964px_rgba(0,0,0,0.05)]">
-            <div className="flex items-start justify-between mb-5">
-              <div className="bg-[#f8f9fc] border border-[rgba(226,232,240,0.3)] rounded-[15px] size-[54px] flex items-center justify-center shrink-0">
-                <img alt="UI/UX Designer" className="size-[40px] object-cover rounded-[8px]" src={imgImage5} />
-              </div>
-              <div className="bg-[#f1f5f9] h-[24px] px-3 rounded-full flex items-center">
-                <span className="font-['Poppins:Bold',sans-serif] text-[10.6px] text-[#64748b] tracking-[-0.27px] whitespace-nowrap">12 HARI LAGI</span>
-              </div>
-            </div>
-
-            <p className="font-['Poppins:SemiBold',sans-serif] text-[17.4px] text-[#1a1c21] leading-[27px] mb-1">UI/UX Designer</p>
-            <p className="font-['Poppins:Medium',sans-serif] text-[13.5px] text-[#64748b] leading-[19px] mb-4">Bandung</p>
-
-            <div className="flex gap-2 mb-4">
-              <span className="bg-[#e8fdf5] h-6 px-3 rounded-full flex items-center font-['Poppins:Bold',sans-serif] text-[10.6px] text-[#006c49] tracking-[0.53px] uppercase whitespace-nowrap">MAGANG</span>
-              <span className="bg-[#f1f5f9] h-6 px-3 rounded-full flex items-center font-['Poppins:Bold',sans-serif] text-[10.6px] text-[#64748b] tracking-[0.53px] uppercase whitespace-nowrap">6 BULAN</span>
-              <span className="bg-[#f1f5f9] h-6 px-3 rounded-full flex items-center font-['Poppins:Bold',sans-serif] text-[10.6px] text-[#64748b] tracking-[0.53px] uppercase whitespace-nowrap">HYBRID</span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <UsersIcon />
-              <span className="font-['Poppins:Medium',sans-serif] text-[11.6px] text-[#94a3b8] leading-[15px]">2 Posisi • 245 Pelamar</span>
-            </div>
-          </div>
-
-          {/* Job Card 3 – Backend Developer */}
-          <div className="bg-white border border-[#e2e8f0] rounded-[23px] p-7 relative drop-shadow-[0px_0.964px_0.964px_rgba(0,0,0,0.05)]">
-            <div className="flex items-start justify-between mb-5">
-              <div className="bg-[#f8f9fc] border border-[rgba(226,232,240,0.3)] rounded-[15px] size-[54px] flex items-center justify-center shrink-0">
-                <img alt="Backend Developer" className="size-[40px] object-cover rounded-[8px]" src={imgImage8} />
-              </div>
-              <div className="bg-[#fee2e2] h-[24px] px-3 rounded-full flex items-center">
-                <span className="font-bold text-[10.6px] text-[#dc2626] tracking-[-0.27px] uppercase whitespace-nowrap">TUTUP BESOK</span>
-              </div>
-            </div>
-
-            <p className="font-['Poppins:SemiBold',sans-serif] text-[17.4px] text-[#1a1c21] leading-[27px] mb-1">Backend Developer</p>
-            <p className="font-medium text-[13.5px] text-[#64748b] leading-[19px] mb-4">Malang</p>
-
-            <div className="flex gap-2 mb-4">
-              <span className="bg-[#e8fdf5] h-6 px-3 rounded-full flex items-center font-bold text-[10.6px] text-[#006c49] tracking-[0.53px] uppercase whitespace-nowrap">MAGANG</span>
-              <span className="bg-[#f1f5f9] h-6 px-3 rounded-full flex items-center font-bold text-[10.6px] text-[#64748b] tracking-[0.53px] uppercase whitespace-nowrap">3 BULAN</span>
-              <span className="bg-[#f1f5f9] h-6 px-3 rounded-full flex items-center font-bold text-[10.6px] text-[#64748b] tracking-[0.53px] uppercase whitespace-nowrap">REMOTE</span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <UsersIcon />
-              <span className="font-medium text-[11.6px] text-[#94a3b8] leading-[15px]">1 Posisi • 512 Pelamar</span>
-            </div>
-          </div>
+            );
+          })}
 
           {/* Kembali button */}
           <button
@@ -141,84 +183,107 @@ export function DetailLowonganPage({ onBack, onApply }: Props) {
         </div>
 
         {/* ── Column B: Job Detail Panel ── */}
-        <div className="flex-1 py-6 pr-[36px] pl-2">
+        <div className="flex-1 py-4 lg:py-6 px-4 lg:pr-[36px] lg:pl-2">
           <div className="bg-white border border-[rgba(226,232,240,0.4)] rounded-[24px] shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.02),0px_10px_15px_-3px_rgba(0,0,0,0.03),0px_20px_25px_-5px_rgba(0,0,0,0.01)] overflow-hidden h-full flex flex-col">
 
             {/* Panel header (fixed, not scrolling) */}
-            <div className="relative flex items-start px-[37px] pt-[29px] pb-6 shrink-0">
-              {/* Company logo */}
-              <img alt="PT Teknologi Maju" className="size-[90px] object-cover rounded-lg shrink-0" src={imgImage3} />
-
-              {/* Title block */}
-              <div className="ml-[12px] flex-1 pt-2">
-                <h1 className="font-['Poppins:Bold',sans-serif] text-[24px] text-[#1a1c21] leading-[28px]">Frontend Developer</h1>
-                <p className="font-['Poppins:Regular',sans-serif] text-[14px] text-black leading-[20px] mt-1">PT Teknologi Maju</p>
-
-                {/* Location + work type */}
-                <div className="flex items-center gap-4 mt-2">
-                  <div className="flex items-center gap-1.5">
-                    <svg className="w-[13.4px] h-[13.6px] shrink-0" fill="none" viewBox="0 0 13.3928 13.6087">
-                      <path d={svgPaths.p18d8d580} stroke="#6A7282" strokeLinecap="round" strokeLinejoin="round" strokeWidth="0.74" />
-                      <path d={svgPaths.p31d7f480} stroke="#6A7282" strokeLinecap="round" strokeLinejoin="round" strokeWidth="0.74" />
-                    </svg>
-                    <span className="font-['Poppins:Regular',sans-serif] text-[9px] text-[#6a7282]">Jakarta</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <svg className="size-[13px] shrink-0" fill="none" viewBox="0 0 12.9231 12.9231">
-                      <g clipPath="url(#clip-work)">
-                        <path d={svgPaths.p2f85c800} stroke="#6A7282" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.08" />
-                      </g>
-                      <defs><clipPath id="clip-work"><rect width="12.9231" height="12.9231" fill="white" /></clipPath></defs>
-                    </svg>
-                    <span className="font-['Poppins:Regular',sans-serif] text-[8.9px] text-[#6a7282]">Onsite</span>
-                  </div>
+            <div className="relative flex flex-col md:flex-row items-start px-6 lg:px-[37px] pt-[29px] pb-6 shrink-0 gap-6">
+              {/* Company logo + title info wrapper */}
+              <div className="flex items-start gap-4 flex-1">
+                <div className="bg-[#f8f9fc] border border-[rgba(226,232,240,0.3)] rounded-lg size-16 md:size-[90px] flex items-center justify-center shrink-0 overflow-hidden">
+                  {job.logo_perusahaan ? (
+                    <img alt={job.nama_perusahaan} className="size-full object-cover" src={job.logo_perusahaan} />
+                  ) : (
+                    <Building2 className="text-blue-500 w-8 h-8 md:w-10 md:h-10" />
+                  )}
                 </div>
 
-                {/* Position count */}
-                <div className="flex items-center gap-2 mt-1.5">
-                  <svg className="w-[14.7px] h-[10.7px] shrink-0" fill="none" viewBox="0 0 14.6667 10.6667">
-                    <path d={svgPaths.p45c1540} fill="#94A3B8" />
-                  </svg>
-                  <span className="font-['Poppins:Medium',sans-serif] text-[12px] text-[#94a3b8] leading-[16px]">1 Posisi • 98 Pelamar</span>
+                <div className="flex-1 pt-1">
+                  <h1 className="font-['Poppins:Bold',sans-serif] text-xl md:text-[24px] text-[#1a1c21] leading-tight">{job.judul}</h1>
+                  <p className="font-['Poppins:Regular',sans-serif] text-sm text-slate-800 leading-tight mt-1">{job.nama_perusahaan}</p>
+
+                  {/* Location + work type */}
+                  <div className="flex flex-wrap items-center gap-3 md:gap-4 mt-2">
+                    <div className="flex items-center gap-1.5">
+                      <svg className="w-[13.4px] h-[13.6px] shrink-0" fill="none" viewBox="0 0 13.3928 13.6087">
+                        <path d={svgPaths.p18d8d580} stroke="#6A7282" strokeLinecap="round" strokeLinejoin="round" strokeWidth="0.74" />
+                        <path d={svgPaths.p31d7f480} stroke="#6A7282" strokeLinecap="round" strokeLinejoin="round" strokeWidth="0.74" />
+                      </svg>
+                      <span className="font-['Poppins:Regular',sans-serif] text-[10px] md:text-[9px] text-[#6a7282]">{job.lokasi}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <svg className="size-[13px] shrink-0" fill="none" viewBox="0 0 12.9231 12.9231">
+                        <g clipPath="url(#clip-work)">
+                          <path d={svgPaths.p2f85c800} stroke="#6A7282" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.08" />
+                        </g>
+                        <defs><clipPath id="clip-work"><rect width="12.9231" height="12.9231" fill="white" /></clipPath></defs>
+                      </svg>
+                      <span className="font-['Poppins:Regular',sans-serif] text-[10px] md:text-[8.9px] text-[#6a7282]">{job.penempatan}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <svg className="w-[14.7px] h-[10.7px] shrink-0" fill="none" viewBox="0 0 14.6667 10.6667">
+                      <path d={svgPaths.p45c1540} fill="#94A3B8" />
+                    </svg>
+                    <span className="font-['Poppins:Medium',sans-serif] text-[11px] md:text-[12px] text-[#94a3b8] leading-[16px]">{job.kuota} Posisi Tersedia</span>
+                  </div>
                 </div>
               </div>
 
               {/* Action buttons */}
-              <div className="flex flex-col gap-[10.6px] ml-8 shrink-0 w-[170px] pt-2">
+              <div className="flex flex-row md:flex-col gap-3 w-full md:w-[170px] pt-0 md:pt-2">
                 <button
-                  onClick={onApply}
-                  className="bg-[#2f6bff] text-white rounded-[21px] py-[14px] flex items-center justify-center w-full"
-                  style={{ boxShadow: "0px 17.6px 22px -4.4px rgba(47,107,255,0.25), 0px 7px 8.8px -5.3px rgba(47,107,255,0.25)" }}
+                  disabled={isAlreadyApplied}
+                  onClick={() => {
+                    setLowongan(job.id_lowongan, job);
+                    onApply();
+                  }}
+                  className={`flex-1 rounded-xl md:rounded-[21px] py-3 md:py-[14px] flex items-center justify-center transition-all ${
+                    isAlreadyApplied 
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed shadow-none" 
+                      : "bg-[#2f6bff] text-white hover:bg-blue-700 shadow-blue-100"
+                  }`}
                 >
-                  <span className="font-['Poppins:Bold',sans-serif] text-[12.3px] leading-[18px]">Daftar Sekarang</span>
+                  <span className="font-['Poppins:Bold',sans-serif] text-[12px] md:text-[12.3px] leading-[18px]">
+                    {isAlreadyApplied ? "Sudah Terdaftar" : "Daftar Sekarang"}
+                  </span>
                 </button>
-                <button className="bg-white border border-[#e2e8f0] rounded-[21px] py-[15px] flex items-center justify-center gap-[7px] w-full">
-                  <svg className="w-[12px] h-[13.2px]" fill="none" viewBox="0 0 13.5 15">
+                <button className="flex-1 md:flex-none bg-white border border-[#e2e8f0] rounded-xl md:rounded-[21px] py-3 md:py-[15px] flex items-center justify-center gap-2">
+                  <svg className="size-3.5 md:w-[12px] md:h-[13.2px]" fill="none" viewBox="0 0 13.5 15">
                     <path d={svgPaths.p2a676800} fill="#1A1C21" />
                   </svg>
-                  <span className="font-['Poppins:Bold',sans-serif] text-[12.3px] text-[#1a1c21] leading-[18px]">Bagikan</span>
+                  <span className="font-['Poppins:Bold',sans-serif] text-[12px] md:text-[12.3px] text-[#1a1c21] leading-[18px]">Bagikan</span>
+                </button>
+                <button 
+                  onClick={onBack}
+                  className="lg:hidden flex items-center justify-center size-12 bg-gray-100 rounded-xl border border-gray-200"
+                >
+                   <svg className="size-6 text-[#3a60a0]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M19 12H5M12 19l-7-7 7-7" />
+                  </svg>
                 </button>
               </div>
             </div>
 
             {/* Scrollable content */}
-            <div className="flex-1 overflow-y-auto px-[37px] pb-6">
+            <div className="flex-1 overflow-y-auto px-6 lg:px-[37px] pb-6">
 
               {/* Tab: DESKRIPSI LOWONGAN */}
               <div className="border-b border-[rgba(226,232,240,0.3)] pb-px mb-6">
                 <div className="inline-block pb-3 border-b-2 border-[#3a60a0]">
-                  <span className="font-['Poppins:Bold',sans-serif] text-[14px] text-[#3a60a0] leading-[20px]">DESKRIPSI LOWONGAN</span>
+                  <span className="font-['Poppins:Bold',sans-serif] text-sm text-[#3a60a0] leading-[20px]">DESKRIPSI LOWONGAN</span>
                 </div>
               </div>
 
-              {/* Two-column layout: main content + right sidebar */}
-              <div className="flex gap-6">
+              {/* Layout wrapper */}
+              <div className="flex flex-col lg:flex-row gap-8 lg:gap-6">
 
                 {/* Main content */}
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 order-2 lg:order-1">
 
                   {/* JENJANG PENDIDIKAN */}
-                  <section className="mb-6">
+                  <section className="mb-8">
                     <div className="flex items-center gap-3 mb-5">
                       <svg className="w-[18.3px] h-[15px] shrink-0" fill="none" viewBox="0 0 18.3333 15">
                         <path d={svgPaths.p15d8a000} fill="#2F6BFF" />
@@ -226,16 +291,16 @@ export function DetailLowonganPage({ onBack, onApply }: Props) {
                       <span className="font-bold text-[14px] text-[#1a1c21] tracking-[0.7px] uppercase leading-[20px]">JENJANG PENDIDIKAN</span>
                     </div>
 
-                    <div className="flex flex-wrap gap-3">
-                      <span className="bg-[#eff6ff] px-5 py-2 rounded-[16px] font-['Poppins:SemiBold',sans-serif] text-[14px] text-[#2f6bff] leading-[20px]">S1</span>
-                      <span className="bg-[#f1f5f9] px-5 py-2 rounded-[16px] font-['Poppins:Medium',sans-serif] text-[14px] text-[#64748b] leading-[20px]">Teknologi Informasi</span>
-                      <span className="bg-[#f1f5f9] px-5 py-2 rounded-[16px] font-['Poppins:Medium',sans-serif] text-[14px] text-[#64748b] leading-[20px]">Teknik Informatika</span>
-                      <span className="bg-[#f1f5f9] px-5 py-2 rounded-[16px] font-['Poppins:Medium',sans-serif] text-[14px] text-[#64748b] leading-[20px]">Sistem Informasi</span>
+                    <div className="flex flex-wrap gap-2 md:gap-3">
+                      <span className="bg-[#eff6ff] px-4 md:px-5 py-2 rounded-[16px] font-['Poppins:SemiBold',sans-serif] text-xs md:text-[14px] text-[#2f6bff] leading-[20px]">S1 / D4 / D3</span>
+                      <span className="bg-[#f1f5f9] px-4 md:px-5 py-2 rounded-[16px] font-['Poppins:Medium',sans-serif] text-xs md:text-[14px] text-[#64748b] leading-[20px]">Teknologi Informasi</span>
+                      <span className="bg-[#f1f5f9] px-4 md:px-5 py-2 rounded-[16px] font-['Poppins:Medium',sans-serif] text-xs md:text-[14px] text-[#64748b] leading-[20px]">Teknik Informatika</span>
+                      <span className="bg-[#f1f5f9] px-4 md:px-5 py-2 rounded-[16px] font-['Poppins:Medium',sans-serif] text-xs md:text-[14px] text-[#64748b] leading-[20px]">Sistem Informasi</span>
                     </div>
                   </section>
 
                   {/* KUALIFIKASI & DESKRIPSI */}
-                  <section className="mb-6">
+                  <section className="mb-8">
                     <div className="flex items-center gap-3 mb-5">
                       <svg className="w-[15px] h-[16.7px] shrink-0" fill="none" viewBox="0 0 15 16.6667">
                         <path d={svgPaths.p114afb00} fill="#2F6BFF" />
@@ -244,30 +309,27 @@ export function DetailLowonganPage({ onBack, onApply }: Props) {
                     </div>
 
                     {/* Kualifikasi Umum box */}
-                    <div className="bg-[#f8fafc] border border-[rgba(226,232,240,0.4)] rounded-[24px] p-[25px]">
+                    <div className="bg-[#f8fafc] border border-[rgba(226,232,240,0.4)] rounded-[24px] p-5 md:p-[25px]">
                       <div className="flex items-center gap-2 mb-4">
                         <div className="bg-[#2f6bff] size-[6px] rounded-full shrink-0" />
-                        <span className="font-['Poppins:Bold',sans-serif] text-[16px] text-[#1a1c21] leading-[24px]">Kualifikasi Umum</span>
+                        <span className="font-['Poppins:Bold',sans-serif] text-[16px] text-[#1a1c21] leading-[24px]">Kualifikasi & Persyaratan</span>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                        {[
-                          ["Mahasiswa", "aktif semester", "5 atau 7"],
-                          ["IPK Minimal", "3.00 dari", "skala 4.00"],
-                          ["Kemampuan", "analisis kuat &", "teliti"],
-                          ["Mampu", "bekerja tim &", "individu"],
-                        ].map((lines, i) => (
-                          <div key={i} className="relative min-h-[68px]">
-                            <CheckCircleIcon />
-                            <div className="absolute left-6 top-0 flex flex-col justify-center h-full">
-                              {lines.map((line, j) => (
-                                <p key={j} className="font-['Poppins:Medium',sans-serif] text-[14px] text-[#64748b] leading-[22.75px]">{line}</p>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
+                      <div className="text-sm md:text-[14px] text-[#64748b] leading-[22px] whitespace-pre-wrap italic">
+                        {job.kualifikasi || "Kualifikasi detail untuk posisi ini dapat Anda baca pada deskripsi di bawah."}
                       </div>
                     </div>
+
+                    {/* Skills section integration */}
+                    {job.skills && job.skills.length > 0 && (
+                      <div className="mt-6 flex flex-wrap gap-2">
+                        {job.skills.map((skill, i) => (
+                          <span key={i} className="bg-blue-50 text-blue-700 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </section>
 
                   {/* PERSYARATAN DOKUMEN */}
@@ -279,22 +341,22 @@ export function DetailLowonganPage({ onBack, onApply }: Props) {
                       <span className="font-['Poppins:Bold',sans-serif] text-[14px] text-[#1a1c21] tracking-[0.7px] uppercase leading-[20px]">PERSYARATAN DOKUMEN</span>
                     </div>
 
-                    <div className="flex flex-wrap gap-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
                       {[
                         { icon: svgPaths.pc679c40, viewBox: "0 0 16 20", cls: "w-4 h-5", label: ["Curriculum", "Vitae / CV"] },
                         { icon: svgPaths.pb257040, viewBox: "0 0 22 18", cls: "w-[22px] h-[18px]", label: ["Transkrip", "Nilai"] },
                         { icon: svgPaths.p207ea900, viewBox: "0 0 20 20", cls: "w-5 h-5", label: ["Identitas", "Diri"] },
                         { icon: svgPaths.p12918080, viewBox: "0 0 18 18", cls: "w-[18px] h-[18px]", label: ["Surat", "Pengantar"] },
                       ].map((doc, i) => (
-                        <div key={i} className="border border-[#e2e8f0] h-[102px] w-[135px] rounded-[24px] flex items-center px-4 gap-3">
-                          <div className="bg-[rgba(47,107,255,0.05)] h-10 w-10 rounded-[16px] flex items-center justify-center shrink-0">
+                        <div key={i} className="border border-[#e2e8f0] h-[90px] md:h-[102px] rounded-[24px] flex items-center px-4 gap-3 bg-white">
+                          <div className="bg-[rgba(47,107,255,0.05)] h-8 md:h-10 w-8 md:w-10 rounded-[12px] md:rounded-[16px] flex items-center justify-center shrink-0">
                             <svg className={doc.cls} fill="none" viewBox={doc.viewBox}>
                               <path d={doc.icon} fill="#2F6BFF" />
                             </svg>
                           </div>
-                          <div>
+                          <div className="min-w-0">
                             {doc.label.map((l, j) => (
-                              <p key={j} className="font-['Poppins:SemiBold',sans-serif] text-[13px] text-[#1a1c21] leading-[20px]">{l}</p>
+                              <p key={j} className="font-['Poppins:SemiBold',sans-serif] text-[11px] md:text-[13px] text-[#1a1c21] leading-tight truncate">{l}</p>
                             ))}
                           </div>
                         </div>
@@ -304,7 +366,7 @@ export function DetailLowonganPage({ onBack, onApply }: Props) {
                 </div>
 
                 {/* Right sidebar */}
-                <div className="w-[280px] shrink-0 flex flex-col gap-5">
+                <div className="w-full lg:w-[280px] shrink-0 flex flex-col gap-5 order-1 lg:order-2">
 
                   {/* Garis Waktu */}
                   <div className="bg-[#f8fafc] border border-[rgba(226,232,240,0.4)] rounded-[24px] p-[20px]">
@@ -313,15 +375,15 @@ export function DetailLowonganPage({ onBack, onApply }: Props) {
                       <div className="flex items-start gap-3">
                         <div className="bg-[#059669] size-2 rounded-full mt-[6px] shrink-0" />
                         <div>
-                          <p className="font-['Poppins:Bold',sans-serif] text-[10px] text-[#94a3b8] uppercase leading-[15px]">DIBUKA</p>
-                          <p className="font-['Poppins:Bold',sans-serif] text-[14px] text-[#1a1c21] leading-[20px]">1 Maret 2026</p>
+                          <p className="font-['Poppins:Bold',sans-serif] text-[10px] text-[#94a3b8] uppercase leading-[15px]">MULAI MAGANG</p>
+                          <p className="font-['Poppins:Bold',sans-serif] text-[14px] text-[#1a1c21] leading-[20px]">{formatDate(job.mulai_magang)}</p>
                         </div>
                       </div>
                       <div className="flex items-start gap-3">
                         <div className="bg-[#dc2626] size-2 rounded-full mt-[6px] shrink-0" />
                         <div>
                           <p className="font-['Poppins:Bold',sans-serif] text-[10px] text-[#94a3b8] uppercase leading-[15px]">DEADLINE</p>
-                          <p className="font-['Poppins:Bold',sans-serif] text-[14px] text-[#dc2626] leading-[20px]">30 Maret 2026</p>
+                          <p className="font-['Poppins:Bold',sans-serif] text-[14px] text-[#dc2626] leading-[20px]">{formatDate(job.batas_lamaran)}</p>
                         </div>
                       </div>
                     </div>
@@ -330,15 +392,22 @@ export function DetailLowonganPage({ onBack, onApply }: Props) {
                   {/* Tentang Perusahaan */}
                   <div className="bg-[#ffdbcd] border border-[rgba(124,45,0,0.05)] rounded-[24px] p-[20px]">
                     <p className="font-['Poppins:Black',sans-serif] text-[11px] text-[rgba(124,45,0,0.6)] tracking-[1.1px] uppercase leading-[16.5px] mb-2">TENTANG Perusahaan</p>
-                    <p className="font-['Poppins:SemiBold',sans-serif] text-[14px] text-[#7c2d00] leading-[19.25px]">PT Teknologi Maju adalah perusahaan strategis negara di bidang teknologi.</p>
+                    <p className="font-['Poppins:SemiBold',sans-serif] text-sm text-[#7c2d00] leading-relaxed">
+                      {job.nama_perusahaan} {job.tentang_perusahaan ? `- ${job.tentang_perusahaan}` : "adalah mitra terpercaya dalam program magang kami."}
+                    </p>
                   </div>
 
                   {/* Tanggung Jawab Utama */}
                   <div>
-                    <p className="font-['Poppins:Bold',sans-serif] text-[14px] text-[#1a1c21] leading-[22.75px] mb-2">Tanggung Jawab Utama:</p>
+                    <p className="font-['Poppins:Bold',sans-serif] text-sm text-[#1a1c21] leading-[22.75px] mb-2">Deskripsi & Benefit:</p>
                     <div className="bg-white border-l-4 border-[rgba(47,107,255,0.2)] pl-5 pr-4 pt-1.5 pb-4">
-                      <p className="font-['Poppins:Medium',sans-serif] text-[14px] text-[#64748b] leading-[22px]">
-                        Membantu pengembangan dan implementasi antarmuka website/aplikasi, mengubah desain menjadi tampilan responsif, melakukan testing dan debugging, serta berkolaborasi dengan tim developer dan UI/UX designer dalam pengembangan fitur frontend.
+                      <p className="font-['Poppins:Medium',sans-serif] text-sm text-[#64748b] leading-relaxed whitespace-pre-wrap">
+                        {job.deskripsi_pekerjaan || job.deskripsi_singkat}
+                        {"\n\n"}
+                        {job.benefit && (
+                          <span className="text-green-700 font-bold block mt-2 underline">Benefit:</span>
+                        )}
+                        {job.benefit}
                       </p>
                     </div>
                   </div>

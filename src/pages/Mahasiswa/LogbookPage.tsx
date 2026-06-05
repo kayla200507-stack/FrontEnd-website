@@ -1,155 +1,212 @@
-import { useState, useRef } from "react";
-import { CheckCircle, Clock, UploadCloud, Calendar, MessageSquare } from "lucide-react";
-
-const initialHistory = [
-  {
-    id: 1,
-    date: "24 Maret 2026",
-    status: "Reviewed",
-    desc: "Mengembangkan fitur login dengan React dan implementasi autentikasi JWT",
-  },
-  {
-    id: 2,
-    date: "23 Maret 2026",
-    status: "Reviewed",
-    desc: "Mempelajari dokumentasi API dan membuat integrasi dengan backend",
-  },
-  {
-    id: 3,
-    date: "22 Maret 2026",
-    status: "Pending",
-    desc: "Meeting dengan tim untuk diskusi design sistem",
-  },
-  {
-    id: 4,
-    date: "21 Maret 2026",
-    status: "Reviewed",
-    desc: "Refactoring kode dan menambahkan unit testing",
-  },
-];
-
-const feedbacks = [
-  {
-    id: 1,
-    date: "24 Maret 2026",
-    dosen: "Dr. Rina Kusuma",
-    aktivitas: "Mengembangkan fitur login dengan React dan implementasi autentikasi JWT",
-    komentar: "Bagus! Coba tambahkan validasi form yang lebih lengkap.",
-  },
-  {
-    id: 2,
-    date: "23 Maret 2026",
-    dosen: "Dr. Rina Kusuma",
-    aktivitas: "Mempelajari dokumentasi API dan membuat integrasi dengan backend",
-    komentar: "Lanjutkan dengan implementasi error handling.",
-  },
-];
+import { useState } from "react";
+import { CheckCircle, Clock, UploadCloud, Calendar, MessageSquare, Loader2 } from "lucide-react";
+import { useAuthStore } from "../../stores/authStore";
+import { useMyMagang } from "../../hooks/useMagang";
+import { useLogbook, useCreateLogbook } from "../../hooks/useLogbook";
+import { Card } from "@/components/common/Card";
+import { Button } from "../../components/ui/button";
+import { DashboardHeader } from "../../components/common/DashboardHeader";
 
 function StatusBadge({ status }: { status: string }) {
-  if (status === "Reviewed") {
+  if (status === "Reviewed" || status === "Selesai" || status === "Valid") {
     return (
       <span className="flex items-center gap-1.5 bg-[#f0fdf4] text-[#008236] text-[12px] font-medium px-2.5 py-1 rounded-[8px] border border-[#b9f8cf] shrink-0">
         <CheckCircle size={11} strokeWidth={2.5} />
-        Reviewed
+        {status}
       </span>
     );
   }
   return (
     <span className="flex items-center gap-1.5 bg-white border border-[rgba(0,0,0,0.2)] text-[#4a5565] text-[12px] font-medium px-2.5 py-1 rounded-[8px] shrink-0">
       <Clock size={11} strokeWidth={2} />
-      Pending
+      {status || "Pending"}
     </span>
   );
 }
 
 export function LogbookPage() {
-  const [history, setHistory] = useState(initialHistory);
+  const { user } = useAuthStore();
+  const { data: magang, isLoading: isLoadingMagang } = useMyMagang();
+  const { data: logbookData, isLoading: isLoadingLogbook } = useLogbook(magang?.id_magang);
+  const { mutate: createLogbook, isPending: isCreating } = useCreateLogbook();
+
   const [tanggal, setTanggal] = useState("");
   const [deskripsi, setDeskripsi] = useState("");
-  const [photo, setPhoto] = useState<string | null>(null);
-  const photoRef = useRef<HTMLInputElement>(null);
+  const [kendala, setKendala] = useState("");
+  const [foto, setFoto] = useState<File | null>(null);
+  const [fotoPreview, setFotoPreview] = useState<string | null>(null);
 
-  function handleSave() {
-    if (!tanggal && !deskripsi) return;
-    const newEntry = {
-      id: Date.now(),
-      date: tanggal
-        ? new Date(tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })
-        : new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
-      status: "Pending",
-      desc: deskripsi || "(tanpa deskripsi)",
-    };
-    setHistory((prev) => [newEntry, ...prev]);
+  const handleSave = () => {
+    if (!magang) return;
+    if (!tanggal || !deskripsi) return;
+
+    const formData = new FormData();
+    formData.append("id_magang", magang.id_magang.toString());
+    formData.append("tanggal", tanggal);
+    formData.append("kegiatan", deskripsi);
+    formData.append("status_validasi", "Pending");
+    if (kendala) {
+      formData.append("kendala", kendala);
+    }
+    if (foto) {
+      formData.append("foto_kegiatan", foto);
+    }
+
+    createLogbook(formData, {
+      onSuccess: () => {
+        setTanggal("");
+        setDeskripsi("");
+        setKendala("");
+        setFoto(null);
+        setFotoPreview(null);
+      }
+    });
+  };
+
+  const handleReset = () => {
     setTanggal("");
     setDeskripsi("");
-    setPhoto(null);
+    setKendala("");
+    setFoto(null);
+    setFotoPreview(null);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFoto(file);
+      const url = URL.createObjectURL(file);
+      setFotoPreview(url);
+    }
+  };
+
+  const logbooks = logbookData?.data || [];
+  
+  // Get actual feedback from logbooks
+  const feedbacks = logbooks
+    .filter((lb: any) => lb.feedback && lb.feedback.trim() !== "")
+    .sort((a: any, b: any) => new Date(b.tanggal).getTime() - new Date(a.tanggal).getTime())
+    .slice(0, 5)
+    .map((lb: any) => ({
+      id: lb.id_logbook,
+      date: new Date(lb.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
+      dosen: magang?.dosen?.user?.profile?.nama || "Dosen Pembimbing",
+      aktivitas: lb.kegiatan,
+      komentar: lb.feedback,
+  }));
+
+  if (isLoadingMagang) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="animate-spin text-blue-600" size={32} />
+      </div>
+    );
   }
 
-  function handleReset() {
-    setTanggal("");
-    setDeskripsi("");
-    setPhoto(null);
+  if (!magang) {
+    return (
+      <div className="p-6">
+        <Card className="p-12 text-center">
+          <p className="text-gray-500">Anda belum terdaftar dalam program magang aktif.</p>
+        </Card>
+      </div>
+    );
   }
 
   return (
-    <div className="p-6">
+    <div className="p-4 md:p-6">
+      <div className="mb-6">
+        <DashboardHeader 
+          title="Logbook Harian" 
+          description="Catat dan pantau aktivitas magang harian Anda" 
+        />
+      </div>
       {/* Top 2-column grid */}
       <div className="grid grid-cols-12 gap-6 mb-6">
         {/* Left: Riwayat Logbook */}
-        <div className="col-span-7 bg-white rounded-xl border border-[rgba(0,0,0,0.1)] shadow-sm p-6">
+        <div className="col-span-12 lg:col-span-7 bg-white rounded-xl border border-[rgba(0,0,0,0.1)] shadow-sm p-4 md:p-6 overflow-hidden">
           <div className="mb-4">
             <p className="text-[#3a60a0] text-lg font-semibold">Riwayat Logbook</p>
             <p className="text-[#3a60a0] text-sm mt-0.5">Aktivitas yang telah dicatat</p>
           </div>
 
-          <div className="space-y-3">
-            {history.map((item) => (
-              <div
-                key={item.id}
-                className="border border-[rgba(0,0,0,0.1)] rounded-lg p-4"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[#4a5565] text-[12px] font-medium">{item.date}</span>
-                  <StatusBadge status={item.status} />
-                </div>
-                <p className="text-[#0a0a0a] text-[14px] leading-[20px]">{item.desc}</p>
+          <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+            {isLoadingLogbook ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="animate-spin text-blue-600" />
               </div>
-            ))}
+            ) : logbooks.length === 0 ? (
+              <p className="text-center text-gray-400 py-8 text-sm">Belum ada riwayat logbook.</p>
+            ) : (
+              logbooks.map((item) => (
+                <div
+                  key={item.id_logbook}
+                  className="border border-[rgba(0,0,0,0.1)] rounded-lg p-3 md:p-4"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                    <span className="text-[#4a5565] text-[12px] font-medium">
+                      {new Date(item.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+                    </span>
+                    <div className="w-fit">
+                      <StatusBadge status={item.status_validasi} />
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-4">
+                    {item.foto_kegiatan_url && (
+                      <div className="w-16 h-16 shrink-0 rounded-lg overflow-hidden border border-gray-200">
+                        <img 
+                          src={item.foto_kegiatan_url} 
+                          alt="Foto" 
+                          className="w-full h-full object-cover" 
+                        />
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <p className="text-[#1e293b] text-[14px] leading-[20px] font-medium">{item.kegiatan}</p>
+                      {item.kendala && (
+                        <p className="text-red-500 text-[12px] mt-2 italic">Kendala: {item.kendala}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
         {/* Right: Input Logbook Harian */}
-        <div className="col-span-5 bg-white rounded-xl border border-[rgba(0,0,0,0.1)] shadow-sm p-6">
+        <div className="col-span-12 lg:col-span-5 bg-white rounded-xl border border-[rgba(0,0,0,0.1)] shadow-sm p-4 md:p-6 h-fit">
           <div className="mb-4">
             <p className="text-[#3a60a0] text-lg font-semibold">Input Logbook Harian</p>
             <p className="text-[#3a60a0] text-sm mt-0.5">Catat aktivitas magang anda setiap hari</p>
           </div>
 
-          {/* Upload photo */}
-          <input
-            ref={photoRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) setPhoto(URL.createObjectURL(file));
-              e.target.value = "";
-            }}
-          />
-          <button
-            onClick={() => photoRef.current?.click()}
-            className="w-full bg-[#f3f4f6] border border-[rgba(0,0,0,0.08)] rounded-lg flex flex-col items-center justify-center gap-2 py-7 mb-4 hover:bg-slate-100 transition-colors overflow-hidden"
-          >
-            {photo ? (
-              <img src={photo} alt="preview" className="max-h-28 object-contain rounded" />
-            ) : (
-              <>
-                <UploadCloud size={28} className="text-[#9ca3af]" strokeWidth={1.5} />
-                <span className="text-[#9ca3af] text-sm">Upload Foto Kegiatan</span>
-              </>
-            )}
-          </button>
+          {/* Photo Upload */}
+          <div className="mb-4">
+            <label className="block text-[#3a60a0] text-sm font-medium mb-2">Foto Kegiatan (Opsional)</label>
+            <div className="relative w-full bg-[#f3f4f6] border border-[rgba(0,0,0,0.08)] rounded-lg overflow-hidden flex flex-col items-center justify-center gap-2 py-5 md:py-7 hover:bg-gray-200 transition-colors cursor-pointer group">
+              {fotoPreview ? (
+                <div className="relative w-full h-40">
+                  <img src={fotoPreview} alt="Preview" className="w-full h-full object-contain" />
+                  <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <UploadCloud size={28} className="text-white mb-2" strokeWidth={1.5} />
+                    <span className="text-white text-sm">Ganti Foto</span>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <UploadCloud size={28} className="text-[#9ca3af]" strokeWidth={1.5} />
+                  <span className="text-[#9ca3af] text-sm">Upload Foto Kegiatan</span>
+                </>
+              )}
+              <input 
+                type="file" 
+                accept="image/*"
+                onChange={handleFileChange}
+                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+              />
+            </div>
+          </div>
 
           {/* Tanggal Kegiatan */}
           <div className="mb-4">
@@ -160,7 +217,7 @@ export function LogbookPage() {
                 type="date"
                 value={tanggal}
                 onChange={(e) => setTanggal(e.target.value)}
-                className="w-full h-9 pl-9 pr-3 bg-white border border-[rgba(0,0,0,0.15)] rounded-lg text-sm text-[#0a0a0a] outline-none focus:border-[#3a60a0] transition-colors"
+                className="w-full h-9 pl-9 pr-3 bg-white border border-[rgba(0,0,0,0.15)] rounded-lg text-sm text-[#1e293b] outline-none focus:border-[#3a60a0] transition-colors"
               />
             </div>
           </div>
@@ -172,68 +229,79 @@ export function LogbookPage() {
               value={deskripsi}
               onChange={(e) => setDeskripsi(e.target.value)}
               placeholder="Tuliskan detail kegiatan yang Anda lakukan hari ini..."
-              rows={4}
-              className="w-full px-3 py-2.5 bg-white border border-[rgba(0,0,0,0.15)] rounded-lg text-sm text-[#0a0a0a] placeholder:text-[#9ca3af] outline-none focus:border-[#3a60a0] resize-none transition-colors"
+              rows={3}
+              className="w-full px-3 py-2.5 bg-white border border-[rgba(0,0,0,0.15)] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9ca3af] outline-none focus:border-[#3a60a0] resize-none transition-colors"
             />
-            <p className="text-[#9ca3af] text-xs mt-1">
-              Jelaskan secara detail apa yang Anda pelajari dan kerjakan
-            </p>
+          </div>
+
+          {/* Kendala */}
+          <div className="mb-4">
+            <label className="block text-[#3a60a0] text-sm font-medium mb-2">Kendala (Opsional)</label>
+            <textarea
+              value={kendala}
+              onChange={(e) => setKendala(e.target.value)}
+              placeholder="Tuliskan kendala jika ada..."
+              rows={2}
+              className="w-full px-3 py-2.5 bg-white border border-[rgba(0,0,0,0.15)] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9ca3af] outline-none focus:border-[#3a60a0] resize-none transition-colors"
+            />
           </div>
 
           {/* Buttons */}
-          <div className="flex items-center gap-3">
-            <button
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <Button 
+              className="w-full sm:flex-1" 
               onClick={handleSave}
-              className="flex-1 h-9 bg-[#0a0a0a] hover:bg-neutral-800 text-white text-sm font-semibold rounded-lg transition-colors"
+              disabled={isCreating || !tanggal || !deskripsi}
             >
+              {isCreating && <Loader2 size={16} className="animate-spin mr-2" />}
               Simpan Logbook
-            </button>
-            <button
-              onClick={handleReset}
-              className="px-5 h-9 bg-white border border-[rgba(0,0,0,0.2)] text-[#0a0a0a] text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors"
-            >
+            </Button>
+            <Button variant="outline" className="w-full sm:w-auto" onClick={handleReset}>
               Reset
-            </button>
+            </Button>
           </div>
         </div>
       </div>
 
       {/* Bottom: Feedback Dosen Pembimbing */}
-      <div className="bg-white rounded-xl border border-[rgba(0,0,0,0.1)] shadow-sm p-6">
-        <div className="mb-4">
-          <div className="flex items-center gap-2">
-            <MessageSquare size={18} className="text-[#3a60a0]" />
-            <p className="text-[#3a60a0] text-lg font-semibold">Feedback Dosen Pembimbing</p>
+      <div className="bg-white rounded-xl border border-[rgba(0,0,0,0.1)] shadow-sm p-4 md:p-6">
+        <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <div className="flex items-center gap-2">
+              <MessageSquare size={18} className="text-[#3a60a0]" />
+              <p className="text-[#3a60a0] text-lg font-semibold">Feedback Dosen Pembimbing</p>
+            </div>
+            <p className="text-[#3a60a0] text-sm mt-0.5">Komentar dan saran untuk logbook terbaru</p>
           </div>
-          <p className="text-[#3a60a0] text-sm mt-0.5">Komentar dan saran untuk logbook terbaru</p>
         </div>
 
         <div className="space-y-4">
-          {feedbacks.map((fb) => (
-            <div
-              key={fb.id}
-              className="bg-[#eff6ff] border-l-4 border-[#2b7fff] rounded-r-[10px] px-5 py-4"
-            >
-              {/* Row 1: date + dosen */}
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[#0a0a0a] text-[12px] font-medium">{fb.date}</span>
-                <span className="bg-white text-[#0a0a0a] text-[12px] font-medium px-3 py-1 rounded-full border border-[rgba(0,0,0,0.08)] shadow-sm">
-                  {fb.dosen}
-                </span>
-              </div>
+          {feedbacks.length === 0 ? (
+            <p className="text-gray-400 text-sm py-4">Belum ada feedback dari dosen pembimbing.</p>
+          ) : (
+            feedbacks.map((fb) => (
+              <div
+                key={fb.id}
+                className="bg-[#eff6ff] border-l-4 border-[#2b7fff] rounded-r-[10px] px-4 md:px-5 py-4"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                  <span className="text-[#1e293b] text-[12px] font-medium">{fb.date}</span>
+                  <span className="w-fit bg-white text-[#1e293b] text-[10px] md:text-[12px] font-medium px-3 py-1 rounded-full border border-[rgba(0,0,0,0.08)] shadow-sm truncate max-w-[200px]">
+                    {fb.dosen}
+                  </span>
+                </div>
 
-              {/* Row 2: aktivitas */}
-              <p className="text-[#0a0a0a] text-[14px] leading-[20px] mb-3">
-                <span className="font-bold">Aktivitas:</span> {fb.aktivitas}
-              </p>
+                <p className="text-[#1e293b] text-[14px] leading-[20px] mb-3">
+                  <span className="font-bold">Aktivitas:</span> {fb.aktivitas}
+                </p>
 
-              {/* Row 3: komentar */}
-              <div className="bg-white rounded-lg px-4 py-3 flex items-start gap-2.5">
-                <MessageSquare size={14} className="text-[#1447e6] shrink-0 mt-0.5" />
-                <p className="text-[#1447e6] text-[14px] font-medium">{fb.komentar}</p>
+                <div className="bg-white rounded-lg px-4 py-3 flex items-start gap-2.5">
+                  <MessageSquare size={14} className="text-[#1447e6] shrink-0 mt-0.5" />
+                  <p className="text-[#1447e6] text-[14px] font-medium">{fb.komentar}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>

@@ -1,11 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Modal } from "../../common/Modal";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import AssessmentCriteria from "./AssessmentCriteria";
@@ -88,44 +82,57 @@ const AssessmentModal: React.FC<AssessmentModalProps> = ({
   if (!student) return null;
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-xl w-[95%] max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Penilaian Magang</DialogTitle>
-
-          <p className="text-sm text-slate-500">
-            Berikan penilaian untuk mahasiswa berdasarkan kriteria yang telah
-            ditentukan
-          </p>
-        </DialogHeader>
-
+    <Modal
+      isOpen={open}
+      onClose={onClose}
+      title="Penilaian Magang"
+      description="Berikan penilaian untuk mahasiswa berdasarkan kriteria yang telah ditentukan"
+      maxWidth="xl"
+      footer={
+        <>
+          <Button variant="outline" onClick={onClose} className="rounded-xl">
+            Batal
+          </Button>
+          <Button onClick={handleSubmit} className="rounded-xl bg-[#0A46D2] hover:bg-blue-700">
+            Simpan Penilaian
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-6">
         {/* DATA MAHASISWA */}
-        <div className="bg-slate-50 rounded-lg p-4">
-          <h3 className="font-semibold text-lg">{student.studentName}</h3>
+        <div className="bg-slate-50 border border-slate-100 rounded-xl p-5">
+          <h3 className="font-bold text-lg text-slate-900">{student.studentName}</h3>
 
-          <div className="grid md:grid-cols-2 gap-2 mt-3 text-sm text-slate-600">
+          <div className="grid md:grid-cols-2 gap-x-6 gap-y-3 mt-3 text-sm text-slate-600">
             <p>
-              <span className="font-medium">NIM:</span> {student.nim}
+              <span className="font-semibold text-slate-400 uppercase text-[10px] tracking-wider block">NIM</span>
+              <span className="text-slate-700 font-medium">{student.nim}</span>
             </p>
 
             <p>
-              <span className="font-medium">Perusahaan:</span> {student.company}
+              <span className="font-semibold text-slate-400 uppercase text-[10px] tracking-wider block">Perusahaan</span>
+              <span className="text-slate-700 font-medium">{student.company}</span>
             </p>
 
             <p>
-              <span className="font-medium">Posisi:</span> {student.position}
+              <span className="font-semibold text-slate-400 uppercase text-[10px] tracking-wider block">Posisi</span>
+              <span className="text-slate-700 font-medium">{student.position}</span>
             </p>
 
             <p>
-              <span className="font-medium">Periode:</span>{" "}
-              {student.periodStart} - {student.periodEnd}
+              <span className="font-semibold text-slate-400 uppercase text-[10px] tracking-wider block">Periode</span>
+              <span className="text-slate-700 font-medium">{student.periodStart} - {student.periodEnd}</span>
             </p>
           </div>
         </div>
 
         {/* KRITERIA */}
         <div>
-          <h3 className="font-semibold text-lg mb-4">Kriteria Penilaian</h3>
+          <h3 className="font-bold text-base text-slate-900 mb-4 flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+            Kriteria Penilaian
+          </h3>
 
           <div className="space-y-4">
             <AssessmentCriteria
@@ -163,37 +170,34 @@ const AssessmentModal: React.FC<AssessmentModalProps> = ({
         </div>
 
         {/* FEEDBACK */}
-        <div>
-          <label className="font-medium block mb-2">Catatan & Feedback</label>
+        <div className="space-y-2">
+          <label className="font-bold text-sm text-slate-700 block">Catatan & Feedback</label>
 
           <Textarea
             value={feedback}
             onChange={(e) => setFeedback(e.target.value)}
             rows={4}
+            className="rounded-xl border-slate-200 focus:ring-blue-500"
             placeholder="Masukkan feedback untuk mahasiswa..."
           />
         </div>
 
         {/* NILAI AKHIR */}
-        <div className="bg-blue-50 border rounded-lg p-4">
+        <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl p-5 text-white shadow-lg shadow-blue-200">
           <div className="flex items-center justify-between">
-            <span className="font-semibold">Nilai Akhir</span>
+            <div>
+              <p className="text-blue-100 text-xs font-bold uppercase tracking-widest">Nilai Akhir</p>
+              <p className="text-sm text-blue-500/0 font-medium mt-0.5">Berdasarkan bobot kriteria</p>
+            </div>
 
-            <span className="text-2xl font-bold text-blue-700">
-              {finalScore}
-            </span>
+            <div className="text-right">
+              <span className="text-4xl font-black">{finalScore}</span>
+              <span className="text-blue-200 ml-1 font-bold">/ 100</span>
+            </div>
           </div>
         </div>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            Batal
-          </Button>
-
-          <Button onClick={handleSubmit}>Simpan Penilaian</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </Modal>
   );
 };
 

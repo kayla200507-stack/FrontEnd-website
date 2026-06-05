@@ -1,16 +1,20 @@
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginType } from "../../lib/zod/authSchema";
-import { ArrowLeft, Divide, Eye, EyeClosed, EyeOff } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
 
 import { useAuthMutation } from "../../hooks/useAuth";
 import { Input } from "@/components/common/Input";
 import { useState } from "react";
 import { Button } from "@/components/common/Button";
+import { useAuthStore } from "../../stores/authStore";
+import { Navigate, Link } from "react-router-dom";
 
 export default function LoginPage() {
-  const { login } = useAuthMutation();
+  const { login, isLoading } = useAuthMutation();
+  const { isAuthenticated, user } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
+  
   const { control, handleSubmit } = useForm<LoginType>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -19,15 +23,22 @@ export default function LoginPage() {
     },
   });
 
+  if (isAuthenticated && user) {
+    if (user.role === "mahasiswa") return <Navigate to="/mahasiswa" replace />;
+    if (user.role === "dosen") return <Navigate to="/dosen" replace />;
+    if (user.role === "admin") return <Navigate to="/admin" replace />;
+  }
+
   const handleShowPassword = () => setShowPassword(!showPassword);
+  
   const onSubmit = (value: LoginType) => {
-    console.log(value);
     login(value);
   };
+
   return (
-    <div className="max-w-[420px] w-full">
+    <div className="max-w-[520px] w-full">
       {/* Header */}
-      <div className="text-center mb-10">
+      <div className="text-center mb-8">
         <h2 className="text-[28px] font-bold text-gray-900 mb-2">
           Masuk ke Akun Anda
         </h2>
@@ -37,21 +48,18 @@ export default function LoginPage() {
       </div>
 
       {/* Form */}
-      <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
-        {/* Email Field */}
-
+      <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
         <Controller
           control={control}
           name="email"
           render={({ field, fieldState }) => (
-            <div className="space-y-2">
-              <label className="block text-[14px] font-semibold text-gray-900">
+            <div className="space-y-1">
+              <label className="text-sm font-semibold text-gray-700">
                 Email/NIM/NIP
               </label>
               <Input
                 placeholder="Masukkan email, NIM, atau NIP"
-                onChange={field.onChange}
-                value={field.value}
+                {...field}
                 error={fieldState.error?.message}
               />
             </div>
@@ -61,15 +69,14 @@ export default function LoginPage() {
           control={control}
           name="password"
           render={({ field, fieldState }) => (
-            <div className="space-y-2">
-              <label className="block text-[14px] font-semibold text-gray-900">
+            <div className="space-y-1">
+              <label className="text-sm font-semibold text-gray-700">
                 Kata Sandi
               </label>
               <Input
                 placeholder="********"
                 suffixIcon={showPassword ? EyeOff : Eye}
-                onChange={field.onChange}
-                value={field.value}
+                {...field}
                 error={fieldState.error?.message}
                 onClickSuffixIcon={handleShowPassword}
                 type={showPassword ? "text" : "password"}
@@ -78,8 +85,6 @@ export default function LoginPage() {
           )}
         />
 
-        {/* Password Field */}
-
         {/* Additional Options */}
         <div className="flex items-center justify-between pt-1">
           <label className="flex items-center gap-2 cursor-pointer">
@@ -87,20 +92,21 @@ export default function LoginPage() {
               type="checkbox"
               className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
             />
-            <span className="text-[13px] text-gray-600 font-medium">
+            <span className="text-sm text-gray-600 font-medium">
               Ingat Saya
             </span>
           </label>
-          <a
-            href="#"
-            className="text-[13px] text-[#0A46D2] font-semibold hover:underline"
+          <Link
+            to="/lupa-kata-sandi"
+            className="text-sm text-[#0A46D2] font-semibold hover:underline"
           >
             Lupa Kata Sandi?
-          </a>
+          </Link>
         </div>
 
         {/* Submit Button */}
-        <Button size="lg" className="w-full">
+        <Button size="lg" className="w-full" disabled={isLoading}>
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Login
         </Button>
       </form>
@@ -115,19 +121,19 @@ export default function LoginPage() {
       {/* Register Link */}
       <p className="text-center text-sm text-gray-600 mb-10">
         Belum memiliki akun?{" "}
-        <a href="#" className="text-[#0A46D2] font-bold hover:underline">
+        <Link to="/auth/register" className="text-[#0A46D2] font-bold hover:underline">
           Daftar di sini
-        </a>
+        </Link>
       </p>
 
       {/* Back to Home Link */}
-      <a
-        href="#"
+      <Link
+        to="/"
         className="flex items-center justify-center gap-2 text-sm text-[#0A46D2] font-medium hover:underline"
       >
         <ArrowLeft size={16} />
         Kembali ke Beranda
-      </a>
+      </Link>
     </div>
   );
 }

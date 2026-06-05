@@ -1,6 +1,5 @@
 import {
   Book,
-  Briefcase,
   BriefcaseBusiness,
   Calendar,
   ClipboardCheck,
@@ -79,19 +78,19 @@ export const data = {
       icon: Users,
     },
     {
-      label: "Verifikasi Pendaftaran",
+      label: "Verifikasi pendaftaran",
       href: "/admin/verifikasi-pendaftaran",
       icon: ClipboardCheck,
-    },
-    {
-      label: "Lowongan Magang",
-      href: "/admin/lowongan-magang",
-      icon: Briefcase,
     },
     {
       label: "Pengumuman",
       href: "/admin/pengumuman",
       icon: FileText,
+    },
+    {
+      label: "Lowongan Magang",
+      href: "/admin/lowongan-magang",
+      icon: BriefcaseBusiness,
     },
   ],
 };

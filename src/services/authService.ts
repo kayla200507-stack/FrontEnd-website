@@ -1,6 +1,6 @@
 import axios from "axios";
 import { api } from "./apiService";
-import type { LoginType } from "../lib/zod/authSchema";
+import type { LoginType, RegisterMahasiswaType, RegisterDosenType } from "../lib/zod/authSchema";
 interface User {
   id_user: number;
   nama: string;
@@ -9,7 +9,7 @@ interface User {
   created_at: string;
   updated_at: string;
   role: "mahasiswa" | "dosen" | "admin";
-  foto_profile: string | null;
+  avatar: string | null;
   no_telp: string | null;
 }
 
@@ -22,4 +22,12 @@ interface LoginResponse {
 
 export const loginService = async (payload: LoginType) => {
   return api.post<LoginResponse, LoginType>("auth/login", payload);
+};
+
+export const registerMahasiswaService = async (payload: RegisterMahasiswaType) => {
+  return api.post<any, RegisterMahasiswaType>("auth/register/student", payload);
+};
+
+export const registerDosenService = async (payload: RegisterDosenType) => {
+  return api.post<any, RegisterDosenType>("auth/register/dosen", payload);
 };

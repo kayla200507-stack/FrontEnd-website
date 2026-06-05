@@ -1,6 +1,5 @@
 // src/pages/Auth/Admin/DataMahasiswa.tsx
 import React, { useState } from 'react';
-import { AdminLayout } from './AdminLayout';
 import { Search, Eye, Users, TrendingUp, Briefcase, CheckCircle } from 'lucide-react';
 
 const DataMahasiswa = () => {
@@ -96,13 +95,7 @@ const DataMahasiswa = () => {
   };
 
   return (
-    <AdminLayout
-      title="Data Mahasiswa"
-      breadcrumb={['Data Mahasiswa']}
-      activeMenu={activeMenu}
-      onMenuChange={handleMenuChange}
-      onLogout={handleLogout}
-    >
+    <>
       {/* Header Section */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Data Mahasiswa</h1>
@@ -294,7 +287,7 @@ const DataMahasiswa = () => {
           </div>
         </div>
       </div>
-    </AdminLayout>
+    </>
   );
 };
 

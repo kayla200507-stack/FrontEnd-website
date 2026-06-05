@@ -1,16 +1,9 @@
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuthStore } from "@/stores/authStore";
 import type { Role } from "@/types/user";
-import { useEffect, useState } from "react";
-import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 
 export function Navigator() {
-  const [token, setToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  useEffect(() => {
-    setToken(localStorage.getItem("token"));
-    setIsLoading(false);
-  }, []);
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isInitializing } = useAuthStore();
 
   const getRedirectByRole = (role?: Role) => {
     switch (role) {
@@ -18,14 +11,18 @@ export function Navigator() {
         return "/admin";
       case "dosen":
         return "/dosen";
+      case "mahasiswa":
+        return "/mahasiswa";
       default:
-        return "mahasiswa";
+        return "/";
     }
   };
-  if (!isLoading) {
-    if (user && isAuthenticated && token)
-      return <Navigate to={getRedirectByRole(user?.role)} replace />;
-    return <Outlet />;
+
+  if (isInitializing) return null;
+
+  if (isAuthenticated && user) {
+    return <Navigate to={getRedirectByRole(user.role)} replace />;
   }
-  return null;
+
+  return <Outlet />;
 }
